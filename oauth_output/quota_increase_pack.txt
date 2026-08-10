@@ -1,0 +1,18 @@
+YouTube Quota Increase Pack - WishFox / Youtube Link
+Target: 800 uploads/day, 200,000 units/project/day
+Form: https://support.google.com/youtube/contact/yt_api_form
+
+WishFox is a creator workflow tool that lets authenticated users schedule and publish short-form clips to their own YouTube channels via OAuth. Each user links their channel once; uploads are initiated only by the channel owner. The app applies metadata, optional thumbnails, and pinned comments. API usage is dominated by videos.insert (~1600 units per upload) plus occasional channels.list and thumbnails.set calls.
+
+We serve multi-channel creators who batch-schedule 50-100+ clips per day per workspace. Target capacity is 800 uploads/day across our user base at launch scale. Default 10,000 units/day supports ~6 uploads per GCP project; we request 200,000 units/day per project (~125 uploads/day) to provide headroom, fault isolation across OAuth clients, and stay within YouTube API Services Terms while we scale verified production users.
+
+Projects:
+  - wishfox-clip-pool-c
+  - wishfox-yt-extra-1-cd35
+  - wishfox-clip-pool-h
+  - key-journal-505020-k7
+  - wishfox-yt-pool-5
+  - youtubelink-500704
+  - copper-site-500801-i2
+  - my-project-3-500802
+  - my-project-4-500802
