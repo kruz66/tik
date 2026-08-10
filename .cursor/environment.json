@@ -1,0 +1,4 @@
+{
+  "name": "tik",
+  "install": "test -f setup-zsh.sh\ntest -f setup-codespace-chrome-remote-desktop.sh\ntest -f zsh-plugin.py\ntest -f nanorc\npython3 -c \"import ast; ast.parse(open('zsh-plugin.py').read())\""
+}
