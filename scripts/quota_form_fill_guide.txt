@@ -1,0 +1,170 @@
+YOUTUBE API QUOTA EXTENSION FORM — COPY/PASTE GUIDE
+Form URL: https://support.google.com/youtube/contact/yt_api_form
+Sign in as: davidmargret458@gmail.com
+
+================================================================================
+SECTION 1 — REASON FOR REQUEST
+================================================================================
+Select: Quota extension request (compliance audit)
+
+================================================================================
+SECTION 2 — ORGANIZATION & CONTACT
+================================================================================
+Are you applying: On behalf of an organization  (or "As an individual" if no registered company — use "self" below)
+
+Your Full Legal Name: David Margret
+Your Organization's Legal Name: WishFox
+  (If individual with no company, write: self)
+Parent Company Name: self
+
+Your Organization's Primary Website: https://mekesh.work.gd:8001/
+
+Legal Address: [YOUR REAL ADDRESS — Google may verify]
+Country: [Your country]
+Street Address: [Your street]
+City: [Your city]
+State/Province: [Your state]
+Postal Code: [Your ZIP]
+
+Category: Creator Tools and Services
+Organization Size / Type: Startup (fewer than 10 employees)
+
+Primary Contact:
+  Name: David Margret
+  Email: davidmargret458@gmail.com
+
+Technical Contact (same):
+  Name: David Margret
+  Email: davidmargret458@gmail.com
+
+Business Contact (same):
+  Name: David Margret
+  Email: davidmargret458@gmail.com
+
+================================================================================
+SECTION 3 — BUSINESS MODEL
+================================================================================
+Describe your organization's work as it relates to YouTube:
+---
+WishFox is a web-based creator workflow platform that helps YouTube creators schedule, process, and publish short-form video clips to their own channels. Users sign in to WishFox, connect their YouTube channel via OAuth 2.0, configure posting preferences, and queue clips for automated upload. The application adds titles, descriptions, tags, custom thumbnails, and optional pinned comments. All uploads are initiated by the authenticated channel owner to their own channel; WishFox does not upload on behalf of third parties without explicit user authorization. The platform reduces manual reposting work for creators who curate clips from TikTok, Twitch, and other sources and republish to YouTube Shorts and long-form content on channels they own.
+---
+
+Target audience (select all that apply):
+  ☑ YouTube creators / content creators
+  ☑ Small businesses using video marketing
+  (Also select "Individual users" if available)
+
+How does your API Client monetize?
+  Select what applies — e.g.:
+  ☑ Subscription fees (if you charge)
+  ☑ Free with optional paid features
+  ☐ Advertising
+
+Prior written approval for commercial use: No (unless you have it)
+
+Google Partner Manager: No
+
+How did you learn about YouTube Data API: Google Developer Documentation
+
+Content Owner ID(s): Leave blank (unless you use Content Manager)
+
+Google Ads Customer ID(s): Leave blank
+
+================================================================================
+SECTION 4 — API CLIENT DETAILS
+================================================================================
+API Client Name: WishFox
+Does this API Client name contain the word "YouTube"?: No
+
+Primary Access URL: https://mekesh.work.gd:8001/
+Privacy Policy URL: https://mekesh.work.gd:8001/privacy/
+Terms of Service URL: https://mekesh.work.gd:8001/terms/
+Is your API Client publicly accessible?: Yes
+
+Demo Account Credentials:
+  Username/Email: wishfox
+  Password: wishfox2626
+  Login URL: https://mekesh.work.gd:8001/
+  Special Instructions: Log in with username "wishfox", click Link YouTube to see OAuth flow, use dashboard to queue uploads. Demo video of full flow: https://youtu.be/sQGnuckG128
+
+================================================================================
+SECTION 5 — PROJECT NUMBERS (select "9" projects)
+================================================================================
+How many project numbers are you adding?: 9
+
+Project #1  Google Cloud Project Number: 763909667755   (wishfox-clip-pool-c)
+Project #2  Google Cloud Project Number: 103758406291  (wishfox-yt-extra-1-cd35)
+Project #3  Google Cloud Project Number: 901293676068  (wishfox-clip-pool-h)
+Project #4  Google Cloud Project Number: 323342604529  (key-journal-505020-k7)
+Project #5  Google Cloud Project Number: 716793063845  (wishfox-yt-pool-5)
+Project #6  Google Cloud Project Number: 482084067432  (youtubelink-500704)
+Project #7  Google Cloud Project Number: 604908311987  (copper-site-500801-i2)
+Project #8  Google Cloud Project Number: 127631382630  (my-project-3-500802)
+Project #9  Google Cloud Project Number: 663390508036  (my-project-4-500802)
+
+FOR EACH PROJECT (repeat same answers):
+  Use Case Category:
+    ☑ Video Uploading & Account Management
+    (Add "Analytics & Reporting" ONLY if you actively use yt-analytics.readonly in production)
+
+  Does this API Client require Google OAuth sign-in?: Yes
+
+  Derived metrics / data storage section:
+    Do NOT check the acknowledgement box unless you need derived metrics storage.
+    (Skip if upload-only.)
+
+  Expected API Usage Volume: 100,000 to 1 million requests per day
+    (200,000 quota units/day falls in this range)
+
+  Quota Details — FOR EACH PROJECT:
+    Total Per Day Quota: 200000
+    Peak Per Min Quota: 20000
+    Detailed Justification:
+    ---
+    This GCP project serves the WishFox creator upload platform (https://mekesh.work.gd:8001/). Primary API call is videos.insert (~1,600 quota units per upload). We distribute load across multiple OAuth clients for reliability and fault isolation; each project supports a portion of our scheduled upload queue. Target per project: up to ~125 video uploads/day (200,000 units) with headroom for channels.list, thumbnails.set, and token refresh. Platform-wide target at scale: 800 uploads/day across authenticated creator workspaces. Uploads occur only to channels the user owns via OAuth. We implement exponential backoff on 403 quotaExceeded, pause queues until Pacific midnight reset, and rotate to alternate projects when one hits daily limit.
+    ---
+
+================================================================================
+SECTION 6 — REQUIRED EVIDENCE (upload for EACH project — same files OK)
+================================================================================
+Upload these PNG/JPEG/PDF (<10MB each):
+
+1. Privacy Policy Screenshot
+   - Capture https://mekesh.work.gd:8001/privacy/ showing YouTube/Google data sections
+
+2. Homepage Screenshot
+   - Capture https://mekesh.work.gd:8001/ showing Privacy Policy link in footer
+
+3. Terms of Service
+   - Capture https://mekesh.work.gd:8001/terms/
+
+4. Conditional Evidence (OAuth + Upload):
+   - OAuth consent screen screenshot (Google "WishFox wants access" screen)
+   - Dashboard upload/schedule interface screenshot
+   - Optional: link to demo video https://youtu.be/sQGnuckG128
+
+Tip: Use same 4 screenshots for all 9 projects since it is one API client.
+
+================================================================================
+SECTION 7 — ATTESTATIONS (check ALL boxes)
+================================================================================
+Policy Acknowledgment: Check all required boxes
+Truthfulness Attestation: Check all required boxes
+Data Usage Consent: Check all required boxes
+
+Then click Submit and verify email from Google.
+
+================================================================================
+OAUTH CLIENT IDs (if form asks)
+================================================================================
+wishfox-clip-pool-c:       763909667755-873psq21tfup663a7obg53mvgm53vtg9.apps.googleusercontent.com
+wishfox-yt-extra-1-cd35:   103758406291-60vslu57epne214970l20d4jp4m88688.apps.googleusercontent.com
+wishfox-clip-pool-h:       901293676068-qfe216c42d6mk8qn7hmkujvj6eoc4ieo.apps.googleusercontent.com
+key-journal-505020-k7:     323342604529-sdvsb3nm9nb6p55a0j470hef8o8bgnng.apps.googleusercontent.com
+wishfox-yt-pool-5:         716793063845-4pcj684rdlefnkpas8252cphfruebbbl.apps.googleusercontent.com
+youtubelink-500704:        482084067432-h9kl282mkukqg14dpd39e01q2l0ighvd.apps.googleusercontent.com
+copper-site-500801-i2:     604908311987-1l2j852p88nbn3qu5c0svcmu090v1vhe.apps.googleusercontent.com
+my-project-3-500802:       127631382630-21ritn0n21dbg5hpkmdbr2v6i2ut42lm.apps.googleusercontent.com
+my-project-4-500802:       663390508036-rlc4s318oh5ti7ba30ohbd6l8jtu8eab.apps.googleusercontent.com
+
+Redirect URI (all projects): https://mekesh.work.gd:8001/api/youtube/callback/
