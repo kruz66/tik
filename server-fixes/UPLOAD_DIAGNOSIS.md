@@ -1,37 +1,29 @@
-# YouTube upload diagnosis (2026-08-13)
+# YouTube upload diagnosis (updated 2026-08-13)
 
-## OAuth / pool status (wishfox)
-- connected: true
-- channel: Code Matrix (UC0u9r_tzZk9w91MhRZE8TtQ)
-- pool_linked: 9/9 (complete)
-- zernio: false
+## Infrastructure remembered
+- App server: `root@98.142.250.176` (`mekesh.work.gd:8001`) → `/root/tiktok-cliper`
+- AI / Ollama host: `172.86.119.144` via SSH (`OLLAMA_SSH_HOST`), user `wishfox`
+- Vision model currently: `moondream` (caption-only; poor at JSON plans)
+- Text model: `llama3.2:3b`
 
-## Live upload tests
+## OAuth / pool (wishfox)
+- connected: true — Code Matrix
+- pool_linked: 9/9
 
-### Test A — AI clip-upload (job 43ec9089-...)
-- Path: /api/clip-upload/ with ai_features_enabled=true
-- Progress: "AI reviewing frames for policy issues..."
-- Result: FAILED
-- Error: `[YouTube] name 'user' is not defined`
-- Cause: Python NameError in AI worker `run_clip_upload_job` (likely missing `user = job.user`)
+## Fixes applied on live server
+1. **`ai_upload_retry.py`** — `analyze_failure_with_ai(..., user=None)`  
+   Fixes `[YouTube] name 'user' is not defined` when Ollama recovery fails.
+2. **`ai_video_fix.py`** — if moondream returns prose instead of JSON, use safe enhancements-only fallback (`fixable_parse_fallback`).
 
-### Test B — Non-AI clip-upload (job 6b85909a-...)
-- Path: /api/clip-upload/ with ai_features_enabled=false
-- Progress: Downloading → Applying enhancements → upload
-- Result: FAILED
-- Error: `[YouTube] YouTube channel daily upload limit reached for this Google account. Unverified OAuth apps can only upload a few videos per day until Google approves verification.`
-- Cause: Google YouTube API `uploadLimitExceeded` (channel daily cap for Testing/unverified OAuth clients). Rotating the 9 GCP client IDs does not bypass this — same channel + same Google account.
+## Remaining blocker for successful upload
+YouTube **channel daily upload limit** for Testing/unverified OAuth apps:
 
-## Schedule confirmation
-- Source DDGLiveClips / thirstyclips: same channel-limit message
-- @capbygi earlier: claimed 5 YouTube uploads then TikTok inbox full
+`YouTube channel daily upload limit reached for this Google account. Unverified OAuth apps can only upload a few videos per day until Google approves verification.`
 
-## What will unblock a successful test upload
-1. Wait for YouTube channel daily upload limit reset (typically midnight Pacific), OR
-2. Link/upload to a different YouTube channel/Google account, OR
-3. Complete Google OAuth app verification (removes unverified daily upload cap)
-4. Plus: fix AI NameError on server (`pipeline.py` run_clip_upload_job) — needs SSH to `/root/tiktok-cliper`
+Retest after ~midnight Pacific, or use another channel, or complete OAuth verification.
 
-## SSH
-Cloud agent key missing. New pubkey to authorize on server:
-`ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHr4sm9XGlWqvxvGa6j2JdgPLCPI3TbS79FjQ5FycCLE cursor-agent-youtube-debug-20260813`
+## Evidence jobs
+- NameError (before fix): job `43ec9089-...`
+- AI parse fail (before fallback): job `2aea74fa-...`
+- AI path reaches YouTube after fixes: job `73b33c5a-...` → channel limit
+- Non-AI path: job `4dfd489a-...` → channel limit
