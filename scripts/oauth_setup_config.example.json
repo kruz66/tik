@@ -1,0 +1,25 @@
+{
+  "email": "skyblaick@gmail.com",
+  "test_users": [
+    "badmandog66@gmail.com",
+    "davidmargret458@gmail.com",
+    "skyblaick@gmail.com"
+  ],
+  "num_projects": 9,
+  "project_name_prefix": "WishFox Clip Pool",
+  "app_name": "WishFox Clipper",
+  "redirect_uri": "https://mekesh.work.gd:8001/api/youtube/callback/",
+  "output_dir": "./oauth_output",
+  "cdp_url": "http://127.0.0.1:9222",
+  "browser_executable": "",
+  "user_data_dir": "",
+  "headless": false,
+  "slow_mo_ms": 100,
+  "page_load_wait_ms": 3000,
+  "existing_project_ids": [],
+  "youtube_scopes": [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/youtube"
+  ]
+}
