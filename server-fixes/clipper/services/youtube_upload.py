@@ -2,7 +2,7 @@ import logging
 
 from clipper.services import zernio_youtube as zernio
 from clipper.services.youtube import (
-    CHANNEL_UPLOAD_LIMIT_MESSAGE,
+    format_channel_upload_limit_message,
     format_upload_error,
     get_credentials_for_project,
     is_channel_upload_limit_error,
@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 GOOGLE_QUOTA_MESSAGE = "YouTube daily API limit reached — try again tomorrow"
 
-
 class YouTubeQuotaError(Exception):
     def __init__(
         self,
@@ -34,7 +33,6 @@ class YouTubeQuotaError(Exception):
         self.message = message
         self.is_channel_limit = is_channel_limit
 
-
 def _credential_project_ids(connection) -> list[str]:
     creds_map = connection.project_credentials or {}
     if not isinstance(creds_map, dict):
@@ -44,7 +42,6 @@ def _credential_project_ids(connection) -> list[str]:
         if connection.credentials_json:
             ids.append(connection.active_project_id)
     return ids
-
 
 def projects_missing_credentials(user) -> list[str]:
     """Pool project IDs that still need a separate OAuth grant for this user."""
@@ -59,17 +56,14 @@ def projects_missing_credentials(user) -> list[str]:
             missing.append(pid)
     return missing
 
-
 def pool_credentials_linked(user) -> int:
     connection = get_connection(user)
     if not connection:
         return 0
     return len(_credential_project_ids(connection))
 
-
 def pool_credentials_total() -> int:
     return project_count()
-
 
 def user_has_youtube_upload_capacity(user) -> bool:
     """True when the user can attempt a YouTube upload right now."""
@@ -85,7 +79,6 @@ def user_has_youtube_upload_capacity(user) -> bool:
             return True
     return bool(connection.credentials_json and connection.active_project_id)
 
-
 def user_has_upload_path(user) -> bool:
     connection = get_connection(user)
     if not connection:
@@ -95,7 +88,6 @@ def user_has_upload_path(user) -> bool:
     if _credential_project_ids(connection):
         return True
     return bool(connection.credentials_json)
-
 
 def _upload_project_order(connection) -> list[str]:
     primary = connection.active_project_id or ""
@@ -107,7 +99,6 @@ def _upload_project_order(connection) -> list[str]:
     if primary and primary in ordered:
         ordered.sort(key=lambda pid: 0 if pid == primary else 1)
     return ordered
-
 
 def upload_user_video(
     user,
@@ -173,7 +164,7 @@ def upload_user_video(
         except Exception as exc:
             if is_channel_upload_limit_error(str(exc)):
                 raise YouTubeQuotaError(
-                    CHANNEL_UPLOAD_LIMIT_MESSAGE,
+                    format_channel_upload_limit_message(),
                     is_channel_limit=True,
                 ) from exc
             if is_upload_quota_error(str(exc)):
