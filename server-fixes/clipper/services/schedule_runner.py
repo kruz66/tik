@@ -358,10 +358,24 @@ def process_queue_items(
     quota_hit = False
     quota_message = ""
 
+    known_ids: set[str] = set()
     for item in items:
         if quota_hit:
             break
         if item.status != ScheduledUploadQueue.Status.PENDING:
+            continue
+
+        vid = str(item.source_video_id or "").strip()
+        if item.user_id not in getattr(process_queue_items, "_known_cache", {}):
+            # per-user known set cache for this call
+            pass
+        if not known_ids:
+            known_ids = _known_video_ids_for_user(item.user)
+        if not vid or vid in known_ids:
+            item.status = ScheduledUploadQueue.Status.FAILED
+            item.error_message = "Skipped: video already seen or previously posted."
+            item.updated_at = timezone.now()
+            item.save(update_fields=["status", "error_message", "updated_at"])
             continue
 
         if is_google_quota_paused(item.user):
@@ -581,11 +595,30 @@ def process_due_uploads_for_user(user, *, limit: int = 5) -> dict:
         updated_at=timezone.now(),
     )
 
+    # Only process recently queued items so hours/days-old backlog never uploads.
+    now = timezone.now()
+    max_age_h = max(1, int(getattr(settings, "SCHEDULE_WATCH_MAX_AGE_HOURS", 6) or 6))
+    newest_allowed = now - timedelta(hours=max_age_h)
+    ScheduledUploadQueue.objects.filter(
+        user=user,
+        status__in=[
+            ScheduledUploadQueue.Status.PENDING,
+            ScheduledUploadQueue.Status.FAILED,
+            ScheduledUploadQueue.Status.UPLOADING,
+        ],
+        created_at__lt=newest_allowed,
+    ).update(
+        status=ScheduledUploadQueue.Status.FAILED,
+        error_message=f"Cancelled: outside new-clip watch window (older than {max_age_h}h).",
+        scheduled_for=now,
+        updated_at=now,
+    )
     due = list(
         ScheduledUploadQueue.objects.filter(
             user=user,
             status=ScheduledUploadQueue.Status.PENDING,
-            scheduled_for__lte=timezone.now(),
+            scheduled_for__lte=now,
+            created_at__gte=newest_allowed,
         ).order_by("scheduled_for")[:limit]
     )
 
@@ -594,9 +627,19 @@ def process_due_uploads_for_user(user, *, limit: int = 5) -> dict:
     quota_hit = False
     quota_message = ""
 
+    known_ids = _known_video_ids_for_user(user)
     for item in due:
         if quota_hit:
             break
+
+        # Never upload a clip that was already seen/posted (hours/days-old or re-queued).
+        vid = str(item.source_video_id or "").strip()
+        if not vid or vid in known_ids:
+            item.status = ScheduledUploadQueue.Status.FAILED
+            item.error_message = "Skipped: video already seen or previously posted."
+            item.updated_at = timezone.now()
+            item.save(update_fields=["status", "error_message", "updated_at"])
+            continue
 
         allowed, limit_message = check_can_upload(user, 1)
         if not allowed:
@@ -606,6 +649,7 @@ def process_due_uploads_for_user(user, *, limit: int = 5) -> dict:
         try:
             process_queued_upload(item, destinations=destinations)
             uploaded += 1
+            known_ids.add(vid)
         except YouTubeQuotaError as exc:
             if exc.is_channel_limit:
                 errors.append(str(exc))
@@ -677,7 +721,26 @@ def _retry_failed_queue_items_for_source(source: ScheduledSource) -> list[Schedu
     items.extend(stuck)
 
     ready: list[ScheduledUploadQueue] = []
+    known_ids = _known_video_ids_for_user(source.user)
     for item in items:
+        vid = str(item.source_video_id or "").strip()
+        err = (item.error_message or "").lower()
+        # Permanent skips: already posted/seen, or cancelled by watchdog cleanup.
+        if (
+            not vid
+            or vid in known_ids
+            or "already seen" in err
+            or "previously posted" in err
+            or "cancelled:" in err
+            or "watchdog" in err
+            or "outside new-clip watch window" in err
+        ):
+            item.status = ScheduledUploadQueue.Status.FAILED
+            if "already seen" not in err and "cancelled:" not in err and "watchdog" not in err:
+                item.error_message = "Skipped: video already seen or previously posted."
+            item.save(update_fields=["status", "error_message", "updated_at"])
+            continue
+
         if ScheduledUploadRecord.objects.filter(
             user=source.user, source_video_id=item.source_video_id
         ).exists():
@@ -686,7 +749,6 @@ def _retry_failed_queue_items_for_source(source: ScheduledSource) -> list[Schedu
             item.save(update_fields=["status", "error_message", "updated_at"])
             continue
 
-        err = (item.error_message or "").lower()
         if (
             item.status == ScheduledUploadQueue.Status.FAILED
             and "ip address is blocked" in err
@@ -882,8 +944,10 @@ def check_user_schedules(user) -> dict:
 
     upload_result = process_due_uploads_for_user(user)
     suggested = 0
+    # Disabled: analytics suggestions re-queue older clips. Watchdog only posts
+    # brand-new IDs discovered on watched sources after baseline.
     try:
-        suggested = queue_suggested_clips(user, limit=3)
+        suggested = 0
     except Exception as exc:
         logger.info("Suggested clip discovery skipped for %s: %s", user, exc)
 

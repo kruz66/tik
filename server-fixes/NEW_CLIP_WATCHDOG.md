@@ -6,8 +6,14 @@
 - Only video IDs that appear **after** that baseline are downloaded/uploaded.
 - Older clips (hours/days ago that were already on the channel listing) are **not** uploaded.
 - Global dedupe by `source_video_id` across schedule records, queue, seen IDs, and Clip Panel uploads.
-- Failed queue retries only within `SCHEDULE_WATCH_MAX_AGE_HOURS` (default 6).
-- Feeder `auto_queue_priority_clips` dump disabled (it was re-posting old clips).
+- Queue processing ignores items older than `SCHEDULE_WATCH_MAX_AGE_HOURS` (default 6) and skips IDs already seen/posted.
+- Failed queue retries only within the watch window.
+- Feeder `auto_queue_priority_clips` and analytics `queue_suggested_clips` disabled (they re-posted old clips).
+
+## systemd
+- Timer: `OnUnitActiveSec=1min`
+- Service uses `flock -n` so overlapping runs are skipped
+- `TimeoutStartSec=600` so one real new clip (download + encode + upload) can finish
 
 ## Settings
 - `SCHEDULE_CHECK_MINUTES=1`

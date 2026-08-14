@@ -1,0 +1,11 @@
+[Unit]
+Description=Run TikTok Cliper new-clip watchdog every 1 minute
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

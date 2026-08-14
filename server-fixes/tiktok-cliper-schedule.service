@@ -1,0 +1,16 @@
+[Unit]
+Description=TikTok Cliper new-clip watchdog check
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/tiktok-cliper
+Environment=DJANGO_SETTINGS_MODULE=config.settings
+# Allow enough time for one real new clip (download + AI/ffmpeg + upload).
+# flock -n skips if a previous cycle is still running.
+TimeoutStartSec=600
+ExecStart=/usr/bin/flock -n /tmp/tiktok-cliper-schedule.lock /root/tiktok-cliper/venv/bin/python /root/tiktok-cliper/manage.py check_upload_schedules
+
+[Install]
+WantedBy=multi-user.target
