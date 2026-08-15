@@ -118,6 +118,7 @@ from clipper.services.youtube import (
 )
 from clipper.services import zernio_youtube as zernio
 from clipper.services.zernio_youtube import get_connection
+from clipper.services.youtube_oauth_pending import resolve_oauth_callback
 from clipper.services.youtube_pool_auth import continue_pool_oauth_queue, projects_needing_oauth, start_pool_oauth
 from clipper.services.youtube_upload import pool_credentials_linked, pool_credentials_total, user_has_upload_path
 
@@ -337,30 +338,14 @@ def api_fetch_videos(request):
 
     raw_input = body.get("input", "").strip()
     source = (body.get("source") or "auto").strip().lower()
-    auto_score = bool(body.get("auto_score", True))
     if not raw_input:
         return JsonResponse({"error": "Input is required."}, status=400)
 
     try:
+        # Return the full fetched list immediately. Do not block on Ollama ranking —
+        # Enable AI still applies at clip/upload time, not during channel fetch.
         data = fetch_videos(raw_input, source=source, user=request.user)
-        score_meta = None
-        if auto_score and ai_features_enabled(request.user) and data.get("videos"):
-            try:
-                scored = score_fetched_videos(request.user, data.get("videos") or [])
-                data["videos"] = scored.get("videos") or data["videos"]
-                data["count"] = len(data["videos"])
-                score_meta = {
-                    "model": scored.get("model"),
-                    "duplicates_found": scored.get("duplicates_found") or 0,
-                    "recommended_count": scored.get("recommended_count") or 0,
-                }
-            except Exception as exc:
-                logger.warning("Auto-score after fetch failed: %s", exc)
-                score_meta = {"error": str(exc)}
-        payload = {"success": True, **data}
-        if score_meta is not None:
-            payload["ai_score"] = score_meta
-        return JsonResponse(payload)
+        return JsonResponse({"success": True, **data})
     except ValueError as exc:
         return JsonResponse({"error": str(exc)}, status=400)
     except Exception as exc:
@@ -1414,11 +1399,22 @@ def api_youtube_callback(request):
         )
 
     state = request.GET.get("state")
-    saved_state = request.session.pop("youtube_oauth_state", None)
-    code_verifier = request.session.pop("youtube_oauth_code_verifier", None)
-    redirect_uri = request.session.pop(
-        "youtube_redirect_uri", None
-    ) or build_redirect_uri(request)
+    oauth_ctx = resolve_oauth_callback(request.user, state or "", request.session)
+    saved_state = oauth_ctx.get("saved_state")
+    code_verifier = oauth_ctx.get("code_verifier")
+    redirect_uri = oauth_ctx.get("redirect_uri") or build_redirect_uri(request)
+    project_id = oauth_ctx.get("project_id")
+    include_analytics = bool(oauth_ctx.get("include_analytics", False))
+    pool_queue = oauth_ctx.get("pool_queue") or []
+
+    request.session.pop("youtube_oauth_state", None)
+    request.session.pop("youtube_oauth_code_verifier", None)
+    request.session.pop("youtube_redirect_uri", None)
+    request.session.pop("youtube_oauth_project_id", None)
+    request.session.pop("youtube_oauth_include_analytics", None)
+    if pool_queue:
+        request.session["youtube_oauth_pool_queue"] = pool_queue
+        request.session.modified = True
 
     if not saved_state or state != saved_state:
         return redirect(
@@ -1426,15 +1422,13 @@ def api_youtube_callback(request):
             + quote("OAuth state mismatch. Please click Link YouTube again.")
         )
 
-    project_id = request.session.pop("youtube_oauth_project_id", None)
-    if not project_id:
+    if not project_id or not code_verifier:
         return redirect(
             "/dashboard/?youtube_error="
             + quote("OAuth session expired. Please click Link YouTube again.")
         )
 
     try:
-        include_analytics = bool(request.session.pop("youtube_oauth_include_analytics", False))
         creds = exchange_code_for_credentials(
             project_id,
             code,
