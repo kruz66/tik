@@ -1,0 +1,819 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{{ app_brand_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'clipper/css/panel.css' %}?v=20260815mobileyt" rel="stylesheet">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <i class="bi bi-scissors"></i>
+        <span>{{ app_brand_name }}</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-item active" type="button" id="navClipPanel" data-view="studio">
+          <i class="bi bi-collection-play"></i>
+          <span>Clip Panel</span>
+        </button>
+        <button class="sidebar-item" type="button" id="navAiCheck" data-view="aicheck">
+          <i class="bi bi-robot"></i>
+          <span>AI Check Clip</span>
+        </button>
+        <button class="sidebar-item sidebar-item-featured" type="button" id="navChannelHelp" data-view="channelhelp">
+          <i class="bi bi-lightning-charge"></i>
+          <span>☠️ AI Help Channel⚡</span>
+        </button>
+        <button class="sidebar-item" type="button" id="navPinnedComment" data-view="comments">
+          <i class="bi bi-chat-left-text"></i>
+          <span>Pinned Comment</span>
+        </button>
+        <button class="sidebar-item" type="button" id="navVideoFx" data-view="videofx">
+          <i class="bi bi-magic"></i>
+          <span>Video Enhancements</span>
+        </button>
+        <a href="/api/youtube/auth/" class="sidebar-item" id="linkYoutubeBtn" {% if youtube_connected %}hidden{% endif %}>
+          <i class="bi bi-youtube"></i>
+          <span>Link YouTube</span>
+        </a>
+        <button class="sidebar-item" type="button" id="unlinkYoutubeBtn" {% if not youtube_connected %}hidden{% endif %}>
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Unlink YouTube</span>
+        </button>
+        <a href="/api/tiktok/auth/" class="sidebar-item" id="linkTiktokBtn" {% if tiktok_connected %}hidden{% endif %}>
+          <i class="bi bi-tiktok"></i>
+          <span>Link TikTok</span>
+        </a>
+        <button class="sidebar-item" type="button" id="unlinkTiktokBtn" {% if not tiktok_connected %}hidden{% endif %}>
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Unlink TikTok</span>
+        </button>
+        <a href="{% url 'upload_schedule' %}" class="sidebar-item">
+          <i class="bi bi-calendar-check"></i>
+          <span>Upload Schedule</span>
+        </a>
+        <button class="sidebar-item" type="button" id="refreshStatusBtn">
+          <i class="bi bi-arrow-repeat"></i>
+          <span>Refresh Status</span>
+        </button>
+        {% if is_app_admin %}
+        <a href="{% url 'admin_plans' %}" class="sidebar-item sidebar-admin-link">
+          <i class="bi bi-person-gear"></i>
+          <span>Activate User Plan</span>
+        </a>
+        {% endif %}
+        <form method="post" action="{% url 'logout' %}" class="sidebar-logout-form">
+          {% csrf_token %}
+          <button class="sidebar-item" type="submit">
+            <i class="bi bi-box-arrow-left"></i>
+            <span>Sign Out</span>
+          </button>
+        </form>
+      </nav>
+      <div class="sidebar-section-label sidebar-bottom-label">Account</div>
+      <div class="sidebar-subscribe-wrap">
+        {% if subscription.active %}
+        <div class="sidebar-subscribe-active">
+          <i class="bi bi-stars"></i>
+          <div>
+            <div class="sidebar-subscribe-title">Pro Active</div>
+            <div class="sidebar-subscribe-meta">Unlimited uploads &amp; AI</div>
+          </div>
+        </div>
+        {% else %}
+        <button type="button" class="sidebar-subscribe-btn" id="subscribeBtn">
+          <i class="bi bi-lightning-charge-fill"></i>
+          <span>Subscribe — ${{ subscription.price_usd|floatformat:0 }}/mo</span>
+        </button>
+        <p class="sidebar-subscribe-hint">Unlimited uploads &amp; AI features</p>
+        {% endif %}
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-title">
+          <div class="top-bar-mobile-brand">
+            <i class="bi bi-scissors" aria-hidden="true"></i>
+            <span>{{ app_brand_name }}</span>
+          </div>
+          <i class="bi bi-funnel top-bar-icon"></i>
+          <h1 id="topBarTitle" class="top-bar-page-title">Clip &amp; Upload Studio</h1>
+          <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+        <div class="top-bar-actions">
+          <span class="badge-status" id="connectionBadge">
+            {% if youtube_connected and tiktok_connected %}YouTube + TikTok Ready
+            {% elif youtube_connected %}YouTube Ready
+            {% elif tiktok_connected %}TikTok Ready
+            {% else %}No Accounts Linked{% endif %}
+          </span>
+          {% if upload_quota.limited %}
+          <span class="badge-status badge-quota" id="quotaBadge" title="Upload limit">
+            <span id="quotaUsed">{{ upload_quota.used }}</span>/{{ upload_quota.limit }}
+            {% if upload_quota.period == "week" %}this week{% else %}today{% endif %}
+          </span>
+          {% elif subscription.active %}
+          <span class="badge-status badge-pro" title="Pro subscription active">Pro Unlimited</span>
+          {% endif %}
+          <div class="user-profile-chip" title="Signed in as {{ user.username }}">
+            <span class="user-profile-avatar" aria-hidden="true">{{ user.username|slice:":1"|upper }}{% if user.username|length > 1 %}{{ user.username|slice:"1:2"|upper }}{% endif %}</span>
+            <span class="user-profile-name">{{ user.username }}</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="studio-workspace" id="studioWorkspace">
+        <div class="three-panel-grid">
+        <!-- Left panel: controls -->
+        <section class="panel-box panel-left glass-neu">
+          <div class="panel-header">
+            <i class="bi bi-sliders"></i>
+            <h2>Controls</h2>
+          </div>
+          <div class="panel-body panel-controls-body">
+            <div class="control-group linked-accounts-group" id="linkedAccountsGroup" {% if not youtube_connected and not tiktok_connected %}hidden{% endif %}>
+              <label class="control-label">Linked accounts</label>
+              <div class="linked-accounts" id="linkedAccountsList">
+                <div class="linked-account-item linked-account-youtube" id="linkedYoutubeCard" {% if not youtube_connected %}hidden{% endif %}>
+                  <span class="linked-account-status" title="Connected" aria-label="Connected"><i class="bi bi-check-circle-fill"></i></span>
+                  <div class="linked-account-avatar linked-account-avatar-youtube" id="linkedYoutubeAvatar">
+                    {% if youtube_connected and youtube_channel and youtube_channel.thumbnail %}
+                    <img src="{{ youtube_channel.thumbnail }}" alt="">
+                    {% else %}
+                    <i class="bi bi-youtube" aria-hidden="true"></i>
+                    {% endif %}
+                  </div>
+                  <div class="linked-account-meta">
+                    <span class="linked-account-name" id="linkedYoutubeName">{% if youtube_channel %}{{ youtube_channel.title }}{% else %}YouTube{% endif %}</span>
+                    <span class="linked-account-platform">YouTube</span>
+                  </div>
+                </div>
+                <div class="linked-account-item linked-account-tiktok" id="linkedTiktokCard" {% if not tiktok_connected %}hidden{% endif %}>
+                  <span class="linked-account-status" title="Connected" aria-label="Connected"><i class="bi bi-check-circle-fill"></i></span>
+                  <div class="linked-account-avatar linked-account-avatar-tiktok" id="linkedTiktokAvatar">
+                    {% if tiktok_connected and tiktok_account and tiktok_account.avatar_url %}
+                    <img src="{{ tiktok_account.avatar_url }}" alt="">
+                    {% else %}
+                    <i class="bi bi-tiktok" aria-hidden="true"></i>
+                    {% endif %}
+                  </div>
+                  <div class="linked-account-meta">
+                    <span class="linked-account-name" id="linkedTiktokName">{% if tiktok_account %}{{ tiktok_account.display_name }}{% else %}TikTok{% endif %}</span>
+                    <span class="linked-account-platform" id="linkedTiktokHandle">{% if tiktok_account and tiktok_account.username %}@{{ tiktok_account.username }}{% else %}TikTok{% endif %}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="control-group connect-accounts-group" id="connectAccountsGroup" {% if youtube_connected and tiktok_connected %}hidden{% endif %}>
+              <label class="control-label">Connect accounts</label>
+              <p class="connect-accounts-hint" id="connectAccountsHint">
+                Link a channel so Clip &amp; Upload can post from your phone.
+              </p>
+              <div class="connect-accounts-stack" id="connectAccountsStack">
+                <a href="/api/youtube/auth/" class="btn-neu btn-neu-primary connect-account-btn" id="connectYoutubeBtn" {% if youtube_connected %}hidden{% endif %}>
+                  <i class="bi bi-youtube"></i> Link YouTube
+                </a>
+                <a href="/api/tiktok/auth/" class="btn-neu btn-neu-ghost connect-account-btn" id="connectTiktokBtn" {% if tiktok_connected %}hidden{% endif %}>
+                  <i class="bi bi-tiktok"></i> Link TikTok
+                </a>
+              </div>
+            </div>
+            <div class="control-group control-group-compact">
+              <label class="control-label">Selection</label>
+              <div class="selection-stats-row">
+                <div class="stat-pill"><span id="selectedCount">0</span> selected</div>
+                <div class="stat-pill muted"><span id="totalCount">0</span> loaded</div>
+                {% if upload_quota.limited %}
+                <div class="stat-pill quota-pill" id="quotaPill">
+                  <span id="quotaRemaining">{{ upload_quota.remaining }}</span> left
+                </div>
+                {% endif %}
+              </div>
+              <div class="controls-btn-grid">
+                <button class="btn-neu btn-neu-ghost" id="selectAllBtn" type="button">
+                  <i class="bi bi-check2-all"></i> Select All
+                </button>
+                <button class="btn-neu btn-neu-ghost" id="clearSelectionBtn" type="button">
+                  <i class="bi bi-x-lg"></i> Clear
+                </button>
+              </div>
+            </div>
+            <div class="control-group control-group-compact">
+              <label class="control-label">AI Features</label>
+              <label class="toggle-switch-row ai-features-toggle" for="aiFeaturesEnabled"
+                title="Off = skip Ollama, AI fixes, and video enhancements; clips download and upload immediately. On = AI checks plus enhancements.">
+                <span class="toggle-switch-label"><i class="bi bi-robot"></i> Enable AI</span>
+                <span class="toggle-switch">
+                  <input type="checkbox" id="aiFeaturesEnabled" class="toggle-switch-input"
+                    {% if posting_preferences.ai_features_enabled %}checked{% endif %}>
+                  <span class="toggle-switch-slider" aria-hidden="true"></span>
+                </span>
+              </label>
+            </div>
+            <div class="control-group control-group-compact">
+              <label class="control-label">Post to</label>
+              <div class="post-destination-toggles post-destination-toggles-inline">
+                <label class="destination-toggle" id="postToYoutubeToggle">
+                  <input type="checkbox" id="postToYoutube" class="post-destination-checkbox" value="youtube"
+                    {% if posting_preferences.post_to_youtube and youtube_connected %}checked{% endif %}
+                    {% if not youtube_connected %}disabled{% endif %}>
+                  <span><i class="bi bi-youtube"></i> YouTube</span>
+                </label>
+                <a href="/api/youtube/auth/" class="destination-link-cta" id="postToYoutubeLinkCta" {% if youtube_connected %}hidden{% endif %}>
+                  Link
+                </a>
+                <label class="destination-toggle" id="postToTiktokToggle">
+                  <input type="checkbox" id="postToTiktok" class="post-destination-checkbox" value="tiktok"
+                    {% if posting_preferences.post_to_tiktok and tiktok_connected %}checked{% endif %}
+                    {% if not tiktok_connected %}disabled{% endif %}>
+                  <span><i class="bi bi-tiktok"></i> TikTok</span>
+                </label>
+                <a href="/api/tiktok/auth/" class="destination-link-cta" id="postToTiktokLinkCta" {% if tiktok_connected %}hidden{% endif %}>
+                  Link
+                </a>
+              </div>
+            </div>
+            <div class="control-group control-group-compact controls-actions-group">
+              <label class="control-label">Actions</label>
+              <div class="controls-actions-stack">
+                <button class="btn-neu btn-neu-primary" id="clipUploadBtn" type="button" disabled
+                  title="Send selected videos to remote AI for clipping and upload">
+                  <i class="bi bi-stars"></i> Clip with AI
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Center panel: video preview grid -->
+        <section class="panel-box panel-center glass-neu">
+          <div class="panel-header">
+            <i class="bi bi-grid-3x3-gap"></i>
+            <h2>Recent Videos</h2>
+            <span class="panel-badge" id="videoCountBadge">0 videos</span>
+          </div>
+          <div class="panel-body panel-scroll panel-preview-body">
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon"><i class="bi bi-play-btn"></i></div>
+              <p>Enter a TikTok, YouTube, or Twitch username — or paste a channel / video / VOD link.</p>
+            </div>
+            <div class="video-grid" id="videoGrid" hidden></div>
+            <div class="loading-state" id="loadingState" hidden>
+              <div class="spinner-neu"></div>
+              <p>Fetching videos...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right panel: progress & logs -->
+        <section class="panel-box panel-right glass-neu">
+          <div class="panel-header">
+            <i class="bi bi-activity"></i>
+            <h2>Progress</h2>
+          </div>
+          <div class="panel-body panel-progress-body">
+            <div class="progress-card" id="progressCard">
+              <div class="progress-card-header">
+                <div class="progress-card-heading">
+                  <div class="progress-label">Job Status</div>
+                  <div class="progress-status" id="jobStatusText">Idle</div>
+                </div>
+                <button type="button" class="progress-cancel-btn" id="cancelJobBtn" hidden>
+                  <i class="bi bi-x-lg" aria-hidden="true"></i>
+                  Cancel
+                </button>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+              </div>
+              <div class="progress-meta">
+                <span class="progress-percent" id="progressPercent">0%</span>
+                <span class="progress-detail" id="progressDetail">Waiting for action</span>
+              </div>
+              <div class="progress-fix-actions" id="aiFixProgressActions" hidden></div>
+            </div>
+            <div class="activity-stage-section">
+              <div class="control-label mb-2">Activity</div>
+              <div class="activity-stage-panel glass-neu" id="activityStagePanel">
+                <div class="activity-stage-window">
+                  <div class="activity-stage-track" id="activityStageTrack"></div>
+                </div>
+                <p class="activity-stage-detail" id="activityStageDetail">Ready to clip</p>
+              </div>
+            </div>
+            <div class="upload-results" id="uploadResults" hidden>
+              <div class="control-label mb-2">Upload Results</div>
+              <div class="upload-results-list" id="resultsList"></div>
+            </div>
+          </div>
+        </section>
+        </div>
+
+        <section class="fetch-panel glass-neu fetch-panel-compact">
+          <div class="fetch-panel-label">
+            <i class="bi bi-collection-play"></i>
+            <span>Video source</span>
+          </div>
+          <div class="fetch-source-row" hidden>
+            <select class="fetch-source-select" id="fetchSourceSelect" aria-label="Video source">
+              <option value="auto">Auto detect</option>
+              <option value="tiktok">TikTok</option>
+              <option value="youtube">YouTube</option>
+              <option value="twitch">Twitch</option>
+            </select>
+          </div>
+          <div class="input-wrapper glass-input">
+            <input
+              type="text"
+              id="tiktokInput"
+              placeholder="TikTok @user, YouTube/Twitch channel, or video/VOD URL"
+              autocomplete="off"
+            >
+            <button class="btn-neu btn-neu-primary btn-fetch" id="fetchBtn" type="button">
+              <i class="bi bi-search"></i> Fetch Videos
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div class="studio-workspace" id="aiCheckWorkspace" hidden>
+        <div class="three-panel-grid">
+          <section class="panel-box panel-left glass-neu">
+            <div class="panel-header">
+              <i class="bi bi-sliders"></i>
+              <h2>AI Controls</h2>
+            </div>
+            <div class="panel-body">
+              <div class="control-group">
+                <label class="control-label">Selection</label>
+                <div class="stat-pill"><span id="aiSelectedCount">0</span> selected</div>
+                <div class="stat-pill muted"><span id="aiTotalCount">0</span> loaded</div>
+              </div>
+              <div class="control-group">
+                <button class="btn-neu btn-neu-ghost w-100 mb-2" id="aiSelectAllBtn" type="button">
+                  <i class="bi bi-check2-all"></i> Select All
+                </button>
+                <button class="btn-neu btn-neu-ghost w-100 mb-2" id="aiClearSelectionBtn" type="button">
+                  <i class="bi bi-x-lg"></i> Clear Selection
+                </button>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Actions</label>
+                <button class="btn-neu btn-neu-primary w-100 mb-2" id="aiCheckBtn" type="button" disabled>
+                  <i class="bi bi-robot"></i> Run AI Check
+                </button>
+                <button class="btn-neu btn-neu-accent w-100" id="aiFetchBtnSide" type="button">
+                  <i class="bi bi-search"></i> Fetch Videos
+                </button>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Remote AI</label>
+                <div class="stat-pill" id="aiOllamaStatusPill">Checking Ollama...</div>
+                <p class="hint-text" id="aiOllamaHint">Vision checks run on your remote Ollama server.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-box panel-center glass-neu">
+            <div class="panel-header">
+              <i class="bi bi-grid-3x3-gap"></i>
+              <h2>Videos To Check</h2>
+              <span class="panel-badge" id="aiVideoCountBadge">0 videos</span>
+            </div>
+            <div class="panel-body panel-scroll panel-preview-body">
+              <div class="empty-state" id="aiEmptyState">
+                <div class="empty-icon"><i class="bi bi-robot"></i></div>
+                <p>Fetch TikTok or YouTube videos, select clips, then run AI Check for upload safety.</p>
+              </div>
+              <div class="video-grid" id="aiVideoGrid" hidden></div>
+              <div class="loading-state" id="aiLoadingState" hidden>
+                <div class="spinner-neu"></div>
+                <p>Fetching videos...</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-box panel-right glass-neu">
+            <div class="panel-header">
+              <i class="bi bi-shield-check"></i>
+              <h2>AI Results</h2>
+            </div>
+            <div class="panel-body panel-scroll">
+              <div class="ai-results-empty" id="aiResultsEmpty">
+                <p>Select one or more videos and click <strong>Run AI Check</strong>.</p>
+              </div>
+              <div class="ai-results-list" id="aiResultsList"></div>
+              <div class="loading-state" id="aiCheckLoading" hidden>
+                <div class="spinner-neu"></div>
+                <p>Analyzing frames with remote AI...</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="fetch-panel glass-neu">
+          <div class="fetch-panel-label">
+            <i class="bi bi-collection-play"></i>
+            <span>Video source</span>
+          </div>
+          <div class="fetch-source-row">
+            <select class="fetch-source-select" id="aiFetchSourceSelect" aria-label="Video source">
+              <option value="auto">Auto detect</option>
+              <option value="tiktok">TikTok</option>
+              <option value="youtube">YouTube</option>
+            </select>
+          </div>
+          <div class="input-wrapper glass-input">
+            <input
+              type="text"
+              id="aiSearchInput"
+              placeholder="TikTok @user, YouTube/Twitch channel, or video/VOD URL"
+              autocomplete="off"
+            >
+            <button class="btn-neu btn-neu-primary btn-fetch" id="aiFetchBtn" type="button">
+              <i class="bi bi-search"></i> Fetch Videos
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div class="studio-workspace channel-help-workspace" id="channelHelpWorkspace" hidden>
+        <div class="channel-help-hero glass-neu">
+          <div>
+            <h2>☠️ AI Help Channel⚡</h2>
+            <p>Your AI growth coach — analyzes your linked channel, finds what works, suggests clip sources, upload times, and content ideas for streamers.</p>
+          </div>
+          <div class="channel-help-actions">
+            <button class="btn-neu btn-neu-primary" id="channelHelpAnalyzeBtn" type="button">
+              <i class="bi bi-stars"></i> Run Full AI Analysis
+            </button>
+            <button class="btn-neu btn-neu-ghost" id="channelHelpRefreshBtn" type="button">
+              <i class="bi bi-arrow-repeat"></i> Refresh Stats
+            </button>
+          </div>
+        </div>
+
+        {% if not youtube_connected %}
+        <div class="comment-settings-alert channel-help-alert">
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>Link your YouTube channel first to unlock AI channel coaching.</span>
+        </div>
+        {% else %}
+        <div class="comment-settings-alert channel-help-alert" id="channelAnalyticsAlert" hidden>
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>
+            For traffic sources, viewer timing, and what people watched before your channel,
+            <a href="/api/youtube/auth/?upgrade_analytics=1" class="comment-permission-link">click Link YouTube again</a>
+            and approve Analytics access.
+          </span>
+        </div>
+        {% endif %}
+
+        <div class="channel-help-coming-soon glass-neu" id="tiktokPostingBanner" {% if tiktok_connected %}hidden{% endif %}>
+          <i class="bi bi-tiktok"></i>
+          <span><strong>TikTok posting</strong> — click <strong>Link TikTok</strong> in the sidebar and authorize via the TikTok Developer API (Login Kit).</span>
+        </div>
+
+        <div class="channel-help-main">
+          <div class="channel-help-progress-overlay" id="channelHelpProgressHost" hidden aria-live="polite"></div>
+          <div class="channel-help-grid">
+          <section class="panel-box glass-neu channel-help-card channel-help-overview">
+            <div class="panel-header panel-header-compact">
+              <i class="bi bi-bar-chart-line"></i>
+              <h2>Channel Overview</h2>
+            </div>
+            <div class="panel-body channel-help-panel-body" id="channelHelpOverview">
+              <p class="hint-text">Loading channel stats...</p>
+            </div>
+          </section>
+
+          <section class="panel-box glass-neu channel-help-card channel-help-videos">
+            <div class="panel-header panel-header-compact">
+              <i class="bi bi-collection-play"></i>
+              <h2>Top Performing Videos</h2>
+            </div>
+            <div class="panel-body channel-help-panel-body" id="channelHelpTopVideos">
+              <p class="hint-text">No video data yet.</p>
+            </div>
+          </section>
+
+          <section class="panel-box glass-neu channel-help-card channel-help-report channel-help-report-full">
+            <div class="panel-header panel-header-compact">
+              <i class="bi bi-graph-up-arrow"></i>
+              <h2>Growth Intelligence</h2>
+            </div>
+            <div class="panel-body channel-help-panel-body channel-help-report-body" id="channelHelpAiReport">
+              <div class="ai-results-empty" id="channelHelpAiReportEmpty">
+                <p>Click <strong>Run Full AI Analysis</strong> for upload times, clip sources, content ideas, and streamer growth tips.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+        </div>
+      </div>
+
+      <div class="comment-settings-workspace" id="commentSettingsWorkspace" hidden>
+        <section class="panel-box glass-neu comment-settings-panel">
+          <div class="panel-header">
+            <i class="bi bi-chat-left-text"></i>
+            <h2>Pinned Comment</h2>
+          </div>
+          <div class="panel-body">
+            <p class="comment-settings-intro">
+              Choose the comment posted on every uploaded video. When enabled, it is posted from your linked channel after each upload.
+            </p>
+            {% if not youtube_connected %}
+            <div class="comment-settings-alert">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span>Link your YouTube channel first, then save your pinned comment settings.</span>
+            </div>
+            {% elif comment_settings.comments_ready is False %}
+            <div class="comment-settings-alert" id="commentPermissionAlert">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span>
+                Comments need an extra Google permission.
+                <a href="/api/youtube/auth/?upgrade_comments=1" class="comment-permission-link">Click Link YouTube again</a>
+                and approve access, then save your comment settings.
+              </span>
+            </div>
+            {% endif %}
+            <div class="control-group">
+              <label class="comment-toggle">
+                <input type="checkbox" id="pinnedCommentEnabled" {% if comment_settings.enabled %}checked{% endif %}>
+                <span>Enable pinned comment on uploads</span>
+              </label>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="pinnedCommentType">Comment style</label>
+              <select class="fetch-source-select w-100" id="pinnedCommentType">
+                {% for t in comment_settings.types %}
+                <option value="{{ t.id }}" {% if comment_settings.comment_type == t.id %}selected{% endif %}>{{ t.label }}</option>
+                {% endfor %}
+              </select>
+              <p class="hint-text">Pick a starting style, then edit the text below to match your taste.</p>
+            </div>
+            <div class="control-group" id="commentTextGroup">
+              <label class="control-label" for="pinnedCommentCustom">Comment text</label>
+              <textarea
+                class="comment-custom-input"
+                id="pinnedCommentCustom"
+                rows="4"
+                maxlength="1000"
+                placeholder="Write the comment you want pinned on every upload..."
+              >{{ comment_settings.comment_text }}</textarea>
+              <p class="hint-text">Use <code>{channel}</code> anywhere to insert your linked channel name.</p>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Preview</label>
+              <div class="comment-preview-box" id="pinnedCommentPreview">{{ comment_settings.preview }}</div>
+            </div>
+            <div class="comment-settings-actions">
+              <button type="button" class="btn-neu btn-neu-primary" id="savePinnedCommentBtn">
+                <i class="bi bi-save"></i> Save Comment Settings
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="comment-settings-workspace" id="videoFxWorkspace" hidden>
+        <section class="panel-box glass-neu comment-settings-panel">
+          <div class="panel-header">
+            <i class="bi bi-magic"></i>
+            <h2>Video Enhancements</h2>
+          </div>
+          <div class="panel-body">
+            <p class="comment-settings-intro">
+              Applied automatically to every clip before upload: subscribe overlay, royalty-free audio, and content safety checks.
+            </p>
+            <div class="control-group">
+              <label class="comment-toggle">
+                <input type="checkbox" id="videoProcessingEnabled" {% if video_processing.enabled %}checked{% endif %}>
+                <span>Enable video enhancements</span>
+              </label>
+            </div>
+            <div class="control-group">
+              <label class="comment-toggle">
+                <input type="checkbox" id="subscribeOverlayEnabled" {% if video_processing.subscribe_overlay %}checked{% endif %}>
+                <span>Subscribe animation (channel name + avatar at middle &amp; end)</span>
+              </label>
+            </div>
+            <div class="control-group">
+              <label class="comment-toggle">
+                <input type="checkbox" id="audioReplaceEnabled" {% if video_processing.audio_replace %}checked{% endif %}>
+                <span>Replace copyrighted audio only when detected (title/metadata hint)</span>
+              </label>
+              <p class="hint-text">Normal uploads keep original audio. AI Check can trim risky parts and fix copyright audio when you click Fix with AI.</p>
+            </div>
+            <div class="control-group">
+              <label class="comment-toggle">
+                <input type="checkbox" id="contentSafetyEnabled" {% if video_processing.content_safety %}checked{% endif %}>
+                <span>Block risky titles/descriptions (violence, harm, etc.)</span>
+              </label>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="audioMoodSelect">Background music mood</label>
+              <select class="fetch-source-select w-100" id="audioMoodSelect">
+                {% for mood in video_processing.moods %}
+                <option value="{{ mood.id }}" {% if video_processing.audio_mood == mood.id %}selected{% endif %}>{{ mood.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <p class="hint-text">
+              Audio replacement removes the original track to avoid copyright claims. Scene-level trimming for fire/violence needs a vision API — metadata safety is checked now.
+            </p>
+            <div class="comment-settings-actions">
+              <button type="button" class="btn-neu btn-neu-primary" id="saveVideoFxBtn">
+                <i class="bi bi-save"></i> Save Video Settings
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="fetch-source-modal-backdrop" id="fetchSourceModalBackdrop" hidden></div>
+  <div class="fetch-source-modal glass-neu" id="fetchSourceModal" hidden role="dialog" aria-labelledby="fetchSourceModalTitle" aria-modal="true">
+    <div class="fetch-source-modal-glow" aria-hidden="true"></div>
+    <div class="fetch-source-modal-header">
+      <div>
+        <h2 id="fetchSourceModalTitle">Choose fetch source</h2>
+        <p>Confirm where to search before loading videos.</p>
+      </div>
+      <button type="button" class="fetch-source-modal-close" id="fetchSourceModalClose" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="fetch-source-modal-query glass-input">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <span id="fetchSourceModalQuery"></span>
+    </div>
+    <div class="fetch-source-options" id="fetchSourceOptions" role="listbox" aria-label="Video source">
+      <button type="button" class="fetch-source-option is-selected" data-source="auto" role="option" aria-selected="true">
+        <span class="fetch-source-option-icon fetch-source-option-icon-auto"><i class="bi bi-stars"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">Auto detect</span>
+          <span class="fetch-source-option-hint">Pick the best match for your input</span>
+        </span>
+      </button>
+      <button type="button" class="fetch-source-option" data-source="tiktok" role="option" aria-selected="false">
+        <span class="fetch-source-option-icon fetch-source-option-icon-tiktok"><i class="bi bi-tiktok"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">TikTok</span>
+          <span class="fetch-source-option-hint">Profile or video links</span>
+        </span>
+      </button>
+      <button type="button" class="fetch-source-option" data-source="youtube" role="option" aria-selected="false">
+        <span class="fetch-source-option-icon fetch-source-option-icon-youtube"><i class="bi bi-youtube"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">YouTube</span>
+          <span class="fetch-source-option-hint">Channels, playlists, or videos</span>
+        </span>
+      </button>
+      <button type="button" class="fetch-source-option" data-source="twitch" role="option" aria-selected="false">
+        <span class="fetch-source-option-icon fetch-source-option-icon-twitch"><i class="bi bi-broadcast"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">Twitch</span>
+          <span class="fetch-source-option-hint">Channel VODs and stream archives</span>
+        </span>
+      </button>
+    </div>
+    <div class="fetch-source-modal-actions">
+      <button type="button" class="btn-neu btn-neu-ghost" id="fetchSourceModalCancel">Cancel</button>
+      <button type="button" class="btn-neu btn-neu-primary" id="fetchSourceModalConfirm">
+        <i class="bi bi-search"></i> Confirm Fetch
+      </button>
+    </div>
+  </div>
+
+  <div class="subscribe-modal-backdrop" id="subscribeModalBackdrop" hidden></div>
+  <div class="subscribe-modal glass-neu" id="subscribeModal" hidden role="dialog" aria-labelledby="subscribeModalTitle" aria-modal="true">
+    <div class="subscribe-modal-header">
+      <div>
+        <h2 id="subscribeModalTitle">Pro Plan — ${{ subscription.price_usd|floatformat:0 }}/month</h2>
+        <p>Unlimited clip &amp; upload with AI features integrated</p>
+      </div>
+      <button type="button" class="subscribe-modal-close" id="subscribeModalClose" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="subscribe-modal-body" id="subscribeStepSelect">
+      <ul class="subscribe-features">
+        <li><i class="bi bi-check-circle-fill"></i> Unlimited daily uploads</li>
+        <li><i class="bi bi-check-circle-fill"></i> AI-powered clip features</li>
+        <li><i class="bi bi-check-circle-fill"></i> Priority processing</li>
+      </ul>
+      <label class="control-label" for="subscribeCoinSelect">Pay with cryptocurrency</label>
+      <select class="subscribe-coin-select" id="subscribeCoinSelect">
+        <option value="">Loading coins...</option>
+      </select>
+      <button type="button" class="btn-neu btn-neu-primary w-100 mt-3" id="subscribePayBtn">
+        <i class="bi bi-wallet2"></i> Continue to Payment
+      </button>
+      <p class="subscribe-note">Secure crypto checkout powered by NOWPayments</p>
+    </div>
+
+    <div class="subscribe-modal-body" id="subscribeStepPay" hidden>
+      <div class="subscribe-pay-grid">
+        <div class="subscribe-qr-wrap">
+          <img id="subscribeQrImage" alt="Payment QR code" class="subscribe-qr-image">
+          <p class="subscribe-qr-hint">Scan with your wallet app</p>
+        </div>
+        <div class="subscribe-pay-details">
+          <div class="subscribe-pay-row">
+            <span class="subscribe-pay-label">Amount</span>
+            <span class="subscribe-pay-value" id="subscribePayAmount">—</span>
+          </div>
+          <div class="subscribe-pay-row">
+            <span class="subscribe-pay-label">Address</span>
+            <div class="subscribe-copy-row">
+              <code id="subscribePayAddress">—</code>
+              <button type="button" class="btn-neu btn-neu-ghost btn-copy" id="copyAddressBtn" title="Copy address">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+          <div class="subscribe-pay-row" id="subscribeMemoRow" hidden>
+            <span class="subscribe-pay-label">Memo / Tag</span>
+            <div class="subscribe-copy-row">
+              <code id="subscribePayMemo">—</code>
+              <button type="button" class="btn-neu btn-neu-ghost btn-copy" id="copyMemoBtn" title="Copy memo">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+          <div class="subscribe-status" id="subscribePaymentStatus">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Waiting for payment...</span>
+          </div>
+          <button type="button" class="btn-neu btn-neu-ghost w-100 mt-2" id="subscribeBackBtn">
+            <i class="bi bi-arrow-left"></i> Choose another coin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+  {{ comment_settings|json_script:"comment-settings-data" }}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'clipper/js/mobile_sidebar.js' %}?v=20260807c"></script>
+  <script>
+    window.TIKTOK_CLIPER = {
+      youtubeConnected: {{ youtube_connected|yesno:"true,false" }},
+      tiktokConnected: {{ tiktok_connected|yesno:"true,false" }},
+      postingPreferences: {
+        postToYoutube: {{ posting_preferences.post_to_youtube|yesno:"true,false" }},
+        postToTiktok: {{ posting_preferences.post_to_tiktok|yesno:"true,false" }},
+        aiFeaturesEnabled: {{ posting_preferences.ai_features_enabled|yesno:"true,false" }},
+      },
+      csrfToken: document.querySelector('meta[name="csrf-token"]').content,
+      uploadQuota: {
+        limited: {{ upload_quota.limited|yesno:"true,false" }},
+        limit: {{ upload_quota.limit|default:"null" }},
+        used: {{ upload_quota.used }},
+        remaining: {{ upload_quota.remaining|default:"null" }},
+      },
+      subscription: {
+        active: {{ subscription.active|yesno:"true,false" }},
+        priceUsd: {{ subscription.price_usd }},
+      },
+      channelTitle: {% if youtube_channel %}"{{ youtube_channel.title|escapejs }}"{% else %}""{% endif %},
+      linkedAccounts: {
+        youtube: {% if youtube_connected %}{
+          name: {% if youtube_channel %}"{{ youtube_channel.title|escapejs }}"{% else %}"YouTube Channel"{% endif %},
+          thumbnail: {% if youtube_channel and youtube_channel.thumbnail %}"{{ youtube_channel.thumbnail|escapejs }}"{% else %}""{% endif %}
+        }{% else %}null{% endif %},
+        tiktok: {% if tiktok_connected %}{
+          displayName: {% if tiktok_account %}"{{ tiktok_account.display_name|escapejs }}"{% else %}"TikTok Account"{% endif %},
+          username: {% if tiktok_account and tiktok_account.username %}"{{ tiktok_account.username|escapejs }}"{% else %}""{% endif %},
+          avatarUrl: {% if tiktok_account and tiktok_account.avatar_url %}"{{ tiktok_account.avatar_url|escapejs }}"{% else %}""{% endif %}
+        }{% else %}null{% endif %}
+      },
+      siteBaseUrl: "{{ site_base_url|escapejs }}",
+    };
+  </script>
+  <script src="{% static 'clipper/js/youtube_cookies.js' %}?v=20260808d"></script>
+  <script src="{% static 'clipper/js/ai_check.js' %}?v=20260807m"></script>
+  <script src="{% static 'clipper/js/tiktok_cookies.js' %}?v=20260808h"></script>
+  <script src="{% static 'clipper/js/panel.js' %}?v=20260815mobileyt"></script>
+  <script src="{% static 'clipper/js/channel_help.js' %}?v=20260809f"></script>
+  <script src="{% static 'clipper/js/subscription.js' %}"></script>
+</body>
+</html>
