@@ -1904,7 +1904,14 @@ def admin_plans(request):
     return render(
         request,
         "clipper/admin_plans.html",
-        {"is_app_admin": True},
+        {
+            "is_app_admin": True,
+            "youtube_connected": is_youtube_connected(request.user, request.session),
+            "youtube_channel": _youtube_channel(request.user, request.session),
+            "tiktok_connected": is_tiktok_connected(request.user),
+            "tiktok_account": get_tiktok_account(request.user),
+            "subscription": get_subscription_info(request.user),
+        },
     )
 
 

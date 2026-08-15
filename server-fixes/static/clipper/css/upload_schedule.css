@@ -1,0 +1,233 @@
+/* Upload Schedule is a long list page. Unlock the Clip Panel shell lock. */
+html.schedule-layout,
+body.schedule-layout {
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body.schedule-layout .app-shell {
+  height: auto !important;
+  min-height: 100dvh;
+  max-height: none !important;
+  overflow: visible !important;
+  align-items: flex-start;
+}
+
+/* Keep ACCOUNT / Subscribe visible in the viewport while the schedule list scrolls. */
+body.schedule-layout .sidebar {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body.schedule-layout .main-content {
+  flex: 1 1 auto;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0;
+  overflow: visible !important;
+}
+
+body.schedule-layout .schedule-page {
+  flex: none;
+  height: auto;
+  overflow: visible;
+}
+
+.schedule-page {
+  padding: 0 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-intro {
+  padding: 16px 18px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.schedule-warn {
+  margin: 12px 0 0;
+  color: #fcd34d;
+}
+
+.schedule-add {
+  padding: 16px 18px;
+}
+
+.schedule-add h2,
+.schedule-recent h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.schedule-add-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.schedule-count {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.schedule-add-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.schedule-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.schedule-scout {
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.schedule-scout-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.schedule-scout-head h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.schedule-scout-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.schedule-scout-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.schedule-scout-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.schedule-scout-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.schedule-scout-reason {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+}
+
+.schedule-item.is-paused {
+  opacity: 0.55;
+}
+
+.schedule-item-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.schedule-item-main i {
+  font-size: 20px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.schedule-item-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.schedule-item-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.schedule-item-msg {
+  font-size: 12px;
+  color: #93c5fd;
+  margin-top: 4px;
+}
+
+.schedule-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.schedule-recent {
+  padding: 16px 18px;
+}
+
+.schedule-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.schedule-recent-item:last-child {
+  border-bottom: none;
+}
+
+.schedule-recent-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.schedule-recent-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+@media (max-width: 720px) {
+  .schedule-add-row {
+    grid-template-columns: 1fr;
+  }
+}
