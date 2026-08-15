@@ -17,7 +17,11 @@ from clipper.services.download_cleanup import (
 from clipper.services.limits import check_can_upload
 from clipper.services.media_download import download_video
 from clipper.services.media_fetch import fetch_videos
-from clipper.services.posting_preferences import normalize_destinations, user_has_any_upload_path
+from clipper.services.posting_preferences import (
+    ai_features_enabled,
+    normalize_destinations,
+    user_has_any_upload_path,
+)
 from clipper.services.schedule_service import source_to_dict
 from clipper.services.upload_timing import get_next_upload_slots
 from clipper.services.video_processing import process_video_for_upload
@@ -487,15 +491,19 @@ def process_queued_upload(
             or title
         )
 
-        processed_filepath = process_video_for_upload(
-            raw_filepath,
-            user,
-            title=title,
-            description=description,
-            destinations=targets,
-        )
-        if not processed_filepath or not Path(processed_filepath).is_file():
-            raise FileNotFoundError("Processed video file is missing before publish.")
+        # Same rule as Clip & Upload: enhancements only when Enable AI is on.
+        if ai_features_enabled(user):
+            processed_filepath = process_video_for_upload(
+                raw_filepath,
+                user,
+                title=title,
+                description=description,
+                destinations=targets,
+            )
+            if not processed_filepath or not Path(processed_filepath).is_file():
+                raise FileNotFoundError("Processed video file is missing before publish.")
+        else:
+            processed_filepath = raw_filepath
 
         publish_result = publish_clip(
             user,
