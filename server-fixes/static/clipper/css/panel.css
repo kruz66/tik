@@ -839,6 +839,26 @@ html, body {
   }
 }
 
+/* Container shrink rules are for desktop side columns only */
+@media (max-width: 1100px) {
+  @container controls-panel (max-height: 560px) {
+    .panel-controls-body .btn-neu {
+      padding: 11px 12px;
+      font-size: 14px;
+    }
+
+    .linked-account-item {
+      padding: 10px 12px;
+      gap: 10px;
+    }
+
+    .linked-account-avatar {
+      width: 36px;
+      height: 36px;
+    }
+  }
+}
+
 .panel-preview-body {
   overflow-y: auto;
   overflow-x: hidden;
@@ -3875,46 +3895,8 @@ body.subscribe-modal-open {
 }
 
 /* === HUNCHO FIX: Mobile layout for linked accounts === */
-@media (max-width: 1100px) {
-  .linked-accounts {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
+/* superseded by phone responsive polish block below */
 
-  .linked-account-item {
-    width: 100%;
-    max-width: 280px;
-    margin: 0 auto;
-  }
-
-  .linked-account-name {
-    font-size: 11px;
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  .linked-account-platform {
-    font-size: 10px;
-    white-space: normal;
-  }
-
-  .linked-account-avatar {
-    width: 32px;
-    height: 32px;
-  }
-
-  .linked-account-avatar img {
-    width: 100%;
-    height: 100%;
-  }
-
-  .linked-accounts:has(.linked-account-youtube[hidden]) .linked-account-tiktok:not([hidden]),
-  .linked-accounts:has(.linked-account-tiktok[hidden]) .linked-account-youtube:not([hidden]) {
-    grid-column: 1;
-    max-width: 280px;
-    margin: 0 auto;
-  }
-}
 
 /* Ensure sidebar accounts are visible on mobile */
 @media (max-width: 1100px) {
@@ -3942,9 +3924,9 @@ body.subscribe-modal-open {
   }
 }
 
-/* In-panel account connect CTAs (esp. mobile — Link YouTube was only in the hamburger) */
+/* In-panel account connect CTAs + destination rows */
 .connect-accounts-group {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .connect-accounts-hint {
@@ -3975,18 +3957,25 @@ body.subscribe-modal-open {
   color: #ff4e45;
 }
 
-.post-destination-toggles-inline {
-  flex-wrap: wrap;
+.destination-row {
+  display: flex;
   align-items: center;
-  gap: 8px 10px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.destination-row .destination-toggle {
+  flex: 1;
+  min-width: 0;
 }
 
 .destination-link-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
-  padding: 4px 10px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid rgba(255, 78, 69, 0.45);
   background: rgba(255, 78, 69, 0.12);
@@ -4006,9 +3995,238 @@ body.subscribe-modal-open {
   opacity: 0.72;
 }
 
+.panel-controls-body .post-destination-toggles-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== Phone / tablet responsive polish ===== */
 @media (max-width: 1100px) {
-  .connect-accounts-group {
-    order: -1;
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-shell,
+  .main-content,
+  .studio-workspace,
+  .three-panel-grid,
+  .panel-box,
+  .panel-left,
+  .panel-center,
+  .panel-right {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .app-shell {
+    display: block !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Kill desktop container-query shrinks on phones */
+  .panel-left {
+    container-type: normal !important;
+  }
+
+  .top-bar {
+    padding: 10px 12px !important;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .top-bar-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .top-bar-mobile-brand {
+    font-size: 14px;
+    gap: 6px;
+    max-width: min(46vw, 160px);
+  }
+
+  .top-bar-mobile-brand span {
+    max-width: 100%;
+  }
+
+  .badge-status {
+    font-size: 10px;
+    padding: 4px 8px;
+    white-space: nowrap;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-profile-name {
+    display: none !important;
+  }
+
+  .user-profile-chip {
+    padding: 2px;
+  }
+
+  .sidebar-toggle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .studio-workspace {
+    padding: 0 10px 18px !important;
+    box-sizing: border-box;
+  }
+
+  .three-panel-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    grid-template-columns: none !important;
+  }
+
+  .panel-box.glass-neu {
+    border-radius: 14px;
+  }
+
+  .panel-header {
+    padding: 10px 12px;
+  }
+
+  .panel-header h2 {
+    font-size: 13px;
+  }
+
+  .panel-left .panel-controls-body,
+  .panel-right .panel-body.panel-progress-body {
+    padding: 12px !important;
+  }
+
+  .panel-controls-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-controls-body .control-group,
+  .panel-controls-body .control-group-compact,
+  .panel-controls-body .controls-actions-group {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .panel-controls-body .control-label {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+
+  .panel-controls-body .btn-neu,
+  .panel-left .panel-body .btn-neu {
+    min-height: 44px;
+    padding: 11px 12px !important;
+    font-size: 14px !important;
+  }
+
+  .panel-controls-body .controls-btn-grid {
+    gap: 8px;
+  }
+
+  .panel-controls-body .stat-pill {
+    font-size: 11px;
+    padding: 5px 9px;
+  }
+
+  .panel-controls-body .toggle-switch-row {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .panel-controls-body .toggle-switch-label {
+    font-size: 14px;
+  }
+
+  .panel-controls-body .destination-toggle {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .panel-controls-body .destination-toggle span {
+    font-size: 14px;
+  }
+
+  .panel-controls-body .post-destination-toggles-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Connected accounts: compact full-width rows (not tall empty cards) */
+  .linked-accounts {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px !important;
+  }
+
+  .linked-account-item {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+    min-height: 52px;
+    box-sizing: border-box;
+  }
+
+  .linked-account-meta {
+    align-items: flex-start !important;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .linked-account-name {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .linked-account-platform {
+    font-size: 11px !important;
+  }
+
+  .linked-account-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px;
+  }
+
+  .linked-account-status {
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+  }
+
+  .linked-accounts:has(.linked-account-youtube[hidden]) .linked-account-tiktok:not([hidden]),
+  .linked-accounts:has(.linked-account-tiktok[hidden]) .linked-account-youtube:not([hidden]) {
+    grid-column: auto;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  /* When BOTH accounts connected, keep two compact stacked rows */
+  .linked-accounts:not(:has(.linked-account-item[hidden])) {
+    gap: 8px;
   }
 
   .connect-account-btn {
@@ -4016,8 +4234,87 @@ body.subscribe-modal-open {
     min-height: 48px;
   }
 
+  .connect-accounts-hint {
+    font-size: 12px;
+  }
+
   .destination-link-cta {
-    min-height: 36px;
-    padding: 6px 12px;
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .panel-center {
+    min-height: min(46vh, 420px) !important;
+  }
+
+  .panel-center .panel-preview-body {
+    min-height: 200px;
+    max-height: 48vh;
+  }
+
+  .panel-right .panel-body {
+    min-height: auto;
+  }
+
+  .progress-card,
+  #progressCard {
+    padding: 10px 0;
+  }
+
+  /* Override tiny container-query styles if they still leak */
+  .panel-controls-body .btn-neu {
+    padding: 11px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .studio-workspace {
+    padding: 0 8px 16px !important;
+  }
+
+  .top-bar-mobile-brand {
+    max-width: min(40vw, 140px);
+    font-size: 13px;
+  }
+
+  .badge-status {
+    max-width: 88px;
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .panel-controls-body .controls-btn-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fetch-panel,
+  .glass-input {
+    gap: 8px;
+  }
+
+  .btn-fetch {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .top-bar-mobile-brand span {
+    display: none;
+  }
+
+  .badge-status {
+    max-width: 72px;
+  }
+
+  .panel-controls-body .controls-btn-grid {
+    grid-template-columns: 1fr;
   }
 }
