@@ -1,0 +1,68 @@
+  <div class="subscribe-modal-backdrop" id="subscribeModalBackdrop" hidden></div>
+  <div class="subscribe-modal glass-neu" id="subscribeModal" hidden role="dialog" aria-labelledby="subscribeModalTitle" aria-modal="true">
+    <div class="subscribe-modal-header">
+      <div>
+        <h2 id="subscribeModalTitle">Pro Plan — ${{ subscription.price_usd|floatformat:0 }}/month</h2>
+        <p>Unlimited clip &amp; upload with AI features integrated</p>
+      </div>
+      <button type="button" class="subscribe-modal-close" id="subscribeModalClose" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="subscribe-modal-body" id="subscribeStepSelect">
+      <ul class="subscribe-features">
+        <li><i class="bi bi-check-circle-fill"></i> Unlimited daily uploads</li>
+        <li><i class="bi bi-check-circle-fill"></i> AI-powered clip features</li>
+        <li><i class="bi bi-check-circle-fill"></i> Priority processing</li>
+      </ul>
+      <label class="control-label" for="subscribeCoinSelect">Pay with cryptocurrency</label>
+      <select class="subscribe-coin-select" id="subscribeCoinSelect">
+        <option value="">Loading coins...</option>
+      </select>
+      <button type="button" class="btn-neu btn-neu-primary w-100 mt-3" id="subscribePayBtn">
+        <i class="bi bi-wallet2"></i> Continue to Payment
+      </button>
+      <p class="subscribe-note">Secure crypto checkout powered by NOWPayments</p>
+    </div>
+
+    <div class="subscribe-modal-body" id="subscribeStepPay" hidden>
+      <div class="subscribe-pay-grid">
+        <div class="subscribe-qr-wrap">
+          <img id="subscribeQrImage" alt="Payment QR code" class="subscribe-qr-image">
+          <p class="subscribe-qr-hint">Scan with your wallet app</p>
+        </div>
+        <div class="subscribe-pay-details">
+          <div class="subscribe-pay-row">
+            <span class="subscribe-pay-label">Amount</span>
+            <span class="subscribe-pay-value" id="subscribePayAmount">—</span>
+          </div>
+          <div class="subscribe-pay-row">
+            <span class="subscribe-pay-label">Address</span>
+            <div class="subscribe-copy-row">
+              <code id="subscribePayAddress">—</code>
+              <button type="button" class="btn-neu btn-neu-ghost btn-copy" id="copyAddressBtn" title="Copy address">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+          <div class="subscribe-pay-row" id="subscribeMemoRow" hidden>
+            <span class="subscribe-pay-label">Memo / Tag</span>
+            <div class="subscribe-copy-row">
+              <code id="subscribePayMemo">—</code>
+              <button type="button" class="btn-neu btn-neu-ghost btn-copy" id="copyMemoBtn" title="Copy memo">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+          <div class="subscribe-status" id="subscribePaymentStatus">
+            <i class="bi bi-hourglass-split"></i>
+            <span>Waiting for payment...</span>
+          </div>
+          <button type="button" class="btn-neu btn-neu-ghost w-100 mt-2" id="subscribeBackBtn">
+            <i class="bi bi-arrow-left"></i> Choose another coin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -89,10 +89,10 @@
           </div>
         </div>
         {% else %}
-        <a href="{% url 'panel' %}" class="sidebar-subscribe-btn" id="subscribeBtn">
+        <button type="button" class="sidebar-subscribe-btn" id="subscribeBtn">
           <i class="bi bi-lightning-charge-fill"></i>
           <span>Subscribe — ${{ subscription.price_usd|floatformat:0 }}/mo</span>
-        </a>
+        </button>
         <p class="sidebar-subscribe-hint">Unlimited uploads &amp; AI features</p>
         {% endif %}
       </div>
@@ -173,6 +173,7 @@
     </main>
   </div>
 
+  {% include "clipper/_subscribe_modal.html" %}
   <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
 
   <div class="fetch-source-modal-backdrop" id="scheduleSourceModalBackdrop" hidden></div>
@@ -257,5 +258,17 @@
     })();
   </script>
   <script src="{% static 'clipper/js/upload_schedule.js' %}?v=20260815a"></script>
+
+  <script>
+    window.TIKTOK_CLIPER = window.TIKTOK_CLIPER || {
+      csrfToken: document.querySelector('meta[name="csrf-token"]').content,
+      subscription: {
+        active: {{ subscription.active|yesno:"true,false" }},
+        priceUsd: {{ subscription.price_usd }},
+      },
+    };
+  </script>
+  <script src="{% static 'clipper/js/subscription.js' %}?v=20260815c"></script>
+
 </body>
 </html>
