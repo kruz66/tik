@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" class="schedule-layout">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>Upload Schedule — {{ app_brand_name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'clipper/css/panel.css' %}" rel="stylesheet">
+  <link href="{% static 'clipper/css/upload_schedule.css' %}?v=20260809f" rel="stylesheet">
+</head>
+<body class="schedule-layout">
+  <div class="app-shell">
+    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <i class="bi bi-scissors"></i>
+        <span>{{ app_brand_name }}</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="{% url 'panel' %}" class="sidebar-item">
+          <i class="bi bi-collection-play"></i>
+          <span>Clip Panel</span>
+        </a>
+        <a href="{% url 'panel' %}?view=aicheck" class="sidebar-item">
+          <i class="bi bi-robot"></i>
+          <span>AI Check Clip</span>
+        </a>
+        <a href="{% url 'panel' %}?view=channelhelp" class="sidebar-item sidebar-item-featured">
+          <i class="bi bi-lightning-charge"></i>
+          <span>☠️ AI Help Channel⚡</span>
+        </a>
+        <a href="{% url 'panel' %}?view=comments" class="sidebar-item">
+          <i class="bi bi-chat-left-text"></i>
+          <span>Pinned Comment</span>
+        </a>
+        <a href="{% url 'panel' %}?view=videofx" class="sidebar-item">
+          <i class="bi bi-magic"></i>
+          <span>Video Enhancements</span>
+        </a>
+        <a href="/api/youtube/auth/" class="sidebar-item" id="linkYoutubeBtn">
+          <i class="bi bi-youtube"></i>
+          <span>Link YouTube</span>
+        </a>
+        <button class="sidebar-item" type="button" id="unlinkYoutubeBtn" {% if not youtube_connected %}hidden{% endif %}>
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Unlink YouTube</span>
+        </button>
+        <a href="/api/tiktok/auth/" class="sidebar-item" id="linkTiktokBtn">
+          <i class="bi bi-tiktok"></i>
+          <span>Link TikTok</span>
+        </a>
+        <button class="sidebar-item" type="button" id="unlinkTiktokBtn" {% if not tiktok_connected %}hidden{% endif %}>
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Unlink TikTok</span>
+        </button>
+        <a href="{% url 'upload_schedule' %}" class="sidebar-item active">
+          <i class="bi bi-calendar-check"></i>
+          <span>Upload Schedule</span>
+        </a>
+        <button class="sidebar-item" type="button" id="refreshStatusBtn">
+          <i class="bi bi-arrow-repeat"></i>
+          <span>Refresh Status</span>
+        </button>
+        {% if is_app_admin %}
+        <a href="{% url 'admin_plans' %}" class="sidebar-item sidebar-admin-link">
+          <i class="bi bi-person-gear"></i>
+          <span>Activate User Plan</span>
+        </a>
+        {% endif %}
+        <form method="post" action="{% url 'logout' %}" class="sidebar-logout-form">
+          {% csrf_token %}
+          <button class="sidebar-item" type="submit">
+            <i class="bi bi-box-arrow-left"></i>
+            <span>Sign Out</span>
+          </button>
+        </form>
+      </nav>
+      <div class="sidebar-section-label sidebar-bottom-label">Account</div>
+      <div class="sidebar-subscribe-wrap">
+        {% if subscription.active %}
+        <div class="sidebar-subscribe-active">
+          <i class="bi bi-stars"></i>
+          <div>
+            <div class="sidebar-subscribe-title">Pro Active</div>
+            <div class="sidebar-subscribe-meta">Unlimited uploads &amp; AI</div>
+          </div>
+        </div>
+        {% else %}
+        <a href="{% url 'panel' %}" class="sidebar-subscribe-btn" id="subscribeBtn">
+          <i class="bi bi-lightning-charge-fill"></i>
+          <span>Subscribe — ${{ subscription.price_usd|floatformat:0 }}/mo</span>
+        </a>
+        <p class="sidebar-subscribe-hint">Unlimited uploads &amp; AI features</p>
+        {% endif %}
+      </div>
+      <div class="sidebar-account" id="youtubeAccountCard">
+        {% if youtube_connected and youtube_channel %}
+        <div class="account-connected">
+          <img src="{{ youtube_channel.thumbnail }}" alt="" class="account-avatar">
+          <div>
+            <div class="account-name">{{ youtube_channel.title }}</div>
+            <div class="account-meta text-success"><i class="bi bi-check-circle-fill"></i> Connected</div>
+          </div>
+        </div>
+        {% elif youtube_connected %}
+        <div class="account-connected">
+          <div class="profile-avatar account-avatar-fallback"><i class="bi bi-youtube"></i></div>
+          <div>
+            <div class="account-name">YouTube Channel</div>
+            <div class="account-meta text-success"><i class="bi bi-check-circle-fill"></i> Connected</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="account-disconnected">
+          <i class="bi bi-cloud-slash"></i>
+          <span>No YouTube linked</span>
+        </div>
+        <div class="oauth-hint">
+          <span class="oauth-hint-label">Click <strong>Link YouTube</strong>, sign in with your channel Google account, then return here.</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="sidebar-account" id="tiktokAccountCard">
+        {% if tiktok_connected and tiktok_account %}
+        <div class="account-connected">
+          {% if tiktok_account.avatar_url %}
+          <img src="{{ tiktok_account.avatar_url }}" alt="" class="account-avatar">
+          {% else %}
+          <div class="profile-avatar account-avatar-fallback"><i class="bi bi-tiktok"></i></div>
+          {% endif %}
+          <div>
+            <div class="account-name">{{ tiktok_account.display_name }}</div>
+            <div class="account-meta text-success"><i class="bi bi-check-circle-fill"></i> TikTok linked</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="account-disconnected">
+          <i class="bi bi-tiktok"></i>
+          <span>No TikTok linked</span>
+        </div>
+        <div class="oauth-hint">
+          <span class="oauth-hint-label">Click <strong>Link TikTok</strong>, authorize with TikTok Login Kit, then return here.</span>
+        </div>
+        {% endif %}
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="top-bar-title">
+          <div class="top-bar-mobile-brand">
+            <i class="bi bi-scissors" aria-hidden="true"></i>
+            <span>{{ app_brand_name }}</span>
+          </div>
+          <i class="bi bi-calendar-check top-bar-icon"></i>
+          <h1 class="top-bar-page-title">Upload Schedule</h1>
+          <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+        <div class="top-bar-actions">
+          <a href="{% url 'panel' %}" class="btn-neu btn-neu-ghost btn-sm-admin">
+            <i class="bi bi-arrow-left"></i> Clip Panel
+          </a>
+        </div>
+      </header>
+
+      <div class="schedule-page">
+        <div class="schedule-intro glass-neu">
+          <p>Add up to <strong>{{ schedule_max }}</strong> Accounts to check every <strong>{{ schedule_check_minutes }}</strong> Minutes</p>
+          {% if not youtube_connected %}
+          <p class="schedule-warn"><i class="bi bi-exclamation-triangle"></i> Link YouTube first before adding pages.</p>
+          {% endif %}
+        </div>
+
+        <div class="schedule-scout glass-neu">
+          <div class="schedule-scout-head">
+            <div>
+              <h2><i class="bi bi-radar"></i> AI Source Scout</h2>
+              <p class="schedule-add-hint">Free local model suggestions for channels to auto-watch.</p>
+            </div>
+            <button type="button" class="btn-neu btn-neu-ghost" id="scheduleScoutBtn">
+              <i class="bi bi-stars"></i> Run scout
+            </button>
+          </div>
+          <div id="scheduleScoutList">
+            <p class="admin-empty">Click Run scout for schedule source ideas.</p>
+          </div>
+        </div>
+
+        <div class="schedule-add glass-neu">
+          <h2>Add page to watch</h2>
+          <div class="schedule-add-row">
+            <input type="text" id="scheduleInput" class="grant-input" placeholder="TikTok @user, YouTube channel, or video URL">
+            <button type="button" class="btn-neu btn-neu-primary" id="scheduleAddBtn">
+              <i class="bi bi-plus-lg"></i> Add
+            </button>
+          </div>
+          <p class="schedule-count"><span id="scheduleCount">0</span> / {{ schedule_max }} pages</p>
+          <p class="schedule-add-hint">You’ll choose TikTok or YouTube before it’s added.</p>
+        </div>
+
+        <div class="schedule-toolbar">
+          <button type="button" class="btn-neu btn-neu-ghost" id="scheduleRunBtn">
+            <i class="bi bi-arrow-repeat"></i> Check now
+          </button>
+        </div>
+
+        <div class="schedule-list glass-neu" id="scheduleList">
+          <p class="admin-empty">Loading...</p>
+        </div>
+
+        <div class="schedule-recent glass-neu">
+          <h2>Recent auto-uploads</h2>
+          <div id="scheduleRecent">
+            <p class="admin-empty">No uploads yet.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+  <div class="fetch-source-modal-backdrop" id="scheduleSourceModalBackdrop" hidden></div>
+  <div class="fetch-source-modal glass-neu" id="scheduleSourceModal" hidden role="dialog" aria-labelledby="scheduleSourceModalTitle" aria-modal="true">
+    <div class="fetch-source-modal-glow" aria-hidden="true"></div>
+    <div class="fetch-source-modal-header">
+      <div>
+        <h2 id="scheduleSourceModalTitle">Choose fetch source</h2>
+        <p id="scheduleSourceModalSubtitle">Confirm where to get clips from before adding this channel.</p>
+      </div>
+      <button type="button" class="fetch-source-modal-close" id="scheduleSourceModalClose" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="fetch-source-modal-query glass-input">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <span id="scheduleSourceModalQuery"></span>
+    </div>
+    <div class="fetch-source-options" id="scheduleSourceOptions" role="listbox" aria-label="Video source">
+      <button type="button" class="fetch-source-option is-selected" data-source="auto" role="option" aria-selected="true">
+        <span class="fetch-source-option-icon fetch-source-option-icon-auto"><i class="bi bi-stars"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">Auto detect</span>
+          <span class="fetch-source-option-hint">Pick the best match for your input</span>
+        </span>
+      </button>
+      <button type="button" class="fetch-source-option" data-source="tiktok" role="option" aria-selected="false">
+        <span class="fetch-source-option-icon fetch-source-option-icon-tiktok"><i class="bi bi-tiktok"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">TikTok</span>
+          <span class="fetch-source-option-hint">Profile or video links</span>
+        </span>
+      </button>
+      <button type="button" class="fetch-source-option" data-source="youtube" role="option" aria-selected="false">
+        <span class="fetch-source-option-icon fetch-source-option-icon-youtube"><i class="bi bi-youtube"></i></span>
+        <span class="fetch-source-option-copy">
+          <span class="fetch-source-option-label">YouTube</span>
+          <span class="fetch-source-option-hint">Channels, playlists, or videos</span>
+        </span>
+      </button>
+    </div>
+    <div class="fetch-source-modal-actions">
+      <button type="button" class="btn-neu btn-neu-ghost" id="scheduleSourceModalCancel">Cancel</button>
+      <button type="button" class="btn-neu btn-neu-primary" id="scheduleSourceModalConfirm">
+        <i class="bi bi-plus-lg"></i> <span id="scheduleSourceModalConfirmLabel">Confirm Add</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="{% static 'clipper/js/mobile_sidebar.js' %}?v=20260807c"></script>
+  <script>
+    window.UPLOAD_SCHEDULE = {
+      csrfToken: document.querySelector('meta[name="csrf-token"]').content,
+      maxSources: {{ schedule_max }},
+    };
+    (function () {
+      const csrf = () => ({
+        "Content-Type": "application/json",
+        "X-CSRFToken": window.UPLOAD_SCHEDULE.csrfToken,
+      });
+      document.getElementById("refreshStatusBtn")?.addEventListener("click", () => location.reload());
+      document.getElementById("unlinkYoutubeBtn")?.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/youtube/disconnect/", { method: "POST", headers: csrf() });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Unlink failed");
+          location.reload();
+        } catch (err) {
+          alert(err.message || "Unlink failed");
+        }
+      });
+      document.getElementById("unlinkTiktokBtn")?.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/api/tiktok/disconnect/", { method: "POST", headers: csrf() });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Unlink failed");
+          location.reload();
+        } catch (err) {
+          alert(err.message || "Unlink failed");
+        }
+      });
+    })();
+  </script>
+  <script src="{% static 'clipper/js/upload_schedule.js' %}?v=20260815a"></script>
+</body>
+</html>

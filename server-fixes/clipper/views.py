@@ -1991,7 +1991,10 @@ def upload_schedule(request):
         "clipper/upload_schedule.html",
         {
             "youtube_connected": is_youtube_connected(request.user, request.session),
+            "youtube_channel": _youtube_channel(request.user, request.session),
             "tiktok_connected": is_tiktok_connected(request.user),
+            "tiktok_account": get_tiktok_account(request.user),
+            "subscription": get_subscription_info(request.user),
             "is_app_admin": is_admin_user(request.user),
             "schedule_max": settings.SCHEDULE_MAX_SOURCES,
             "schedule_check_minutes": settings.SCHEDULE_CHECK_MINUTES,
