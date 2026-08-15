@@ -98,56 +98,6 @@
         <p class="sidebar-subscribe-hint">Unlimited uploads &amp; AI features</p>
         {% endif %}
       </div>
-      <div class="sidebar-account" id="youtubeAccountCard">
-        {% if youtube_connected and youtube_channel %}
-        <div class="account-connected">
-          <img src="{{ youtube_channel.thumbnail }}" alt="" class="account-avatar">
-          <div>
-            <div class="account-name">{{ youtube_channel.title }}</div>
-            <div class="account-meta text-success"><i class="bi bi-check-circle-fill"></i> Connected</div>
-          </div>
-        </div>
-        {% elif youtube_connected %}
-        <div class="account-connected">
-          <div class="profile-avatar account-avatar-fallback"><i class="bi bi-youtube"></i></div>
-          <div>
-            <div class="account-name">YouTube Channel</div>
-            <div class="account-meta text-success"><i class="bi bi-check-circle-fill"></i> Connected</div>
-          </div>
-        </div>
-        {% else %}
-        <div class="account-disconnected">
-          <i class="bi bi-cloud-slash"></i>
-          <span>No YouTube linked</span>
-        </div>
-        <div class="oauth-hint">
-          <span class="oauth-hint-label">Click <strong>Link YouTube</strong>, sign in with your channel Google account, then return here.</span>
-        </div>
-        {% endif %}
-      </div>
-      <div class="sidebar-account" id="tiktokAccountCard">
-        {% if tiktok_connected and tiktok_account %}
-        <div class="account-connected">
-          {% if tiktok_account.avatar_url %}
-          <img src="{{ tiktok_account.avatar_url }}" alt="" class="account-avatar">
-          {% else %}
-          <div class="profile-avatar account-avatar-fallback"><i class="bi bi-tiktok"></i></div>
-          {% endif %}
-          <div>
-            <div class="account-name">{{ tiktok_account.display_name }}</div>
-            <div class="account-meta text-success"><i class="bi bi-check-circle-fill"></i> TikTok linked</div>
-          </div>
-        </div>
-        {% else %}
-        <div class="account-disconnected">
-          <i class="bi bi-tiktok"></i>
-          <span>No TikTok linked</span>
-        </div>
-        <div class="oauth-hint">
-          <span class="oauth-hint-label">Click <strong>Link TikTok</strong>, authorize with TikTok Login Kit, then return here.</span>
-        </div>
-        {% endif %}
-      </div>
     </aside>
 
     <main class="main-content">
