@@ -239,8 +239,12 @@ def _extract_user_playlist(profile_ref: str, limit: int | None = None) -> dict[s
     try:
         with yt_dlp.YoutubeDL(_playlist_ydl_opts(limit)) as ydl:
             return ydl.extract_info(profile_ref, download=False)
-    except yt_dlp.utils.DownloadError:
-        logger.exception("TikTok playlist extract failed for %s", profile_ref)
+    except yt_dlp.utils.DownloadError as exc:
+        logger.warning("TikTok playlist extract failed for %s: %s", profile_ref, exc)
+        return None
+    except Exception as exc:
+        # Missing curl_cffi / unsupported impersonate should not crash fetch.
+        logger.warning("TikTok playlist extract error for %s: %s", profile_ref, exc)
         return None
 
 
