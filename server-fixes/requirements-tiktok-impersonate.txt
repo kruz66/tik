@@ -1,0 +1,4 @@
+# Pin curl_cffi for yt-dlp Chrome impersonation.
+# curl_cffi>=0.14 / 0.15 / 0.16 have broken ImpersonateTarget support with
+# current yt-dlp releases (AssertionError / unsupported targets).
+curl_cffi==0.13.0
