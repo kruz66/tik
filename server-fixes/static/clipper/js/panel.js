@@ -2040,7 +2040,7 @@
 
   const COMMENT_TEMPLATES = {
     subscribe:
-      "🔔 Plz Subscribe,  to help me  get 500 subs on YouTube  🙏\nIf you already Subscribe , Thank you so much i really appreciate it ❤️",
+      "🔔 Plz Subscribe,  to help me  get 1K subs on YouTube  🙏\nIf you already Subscribe , Thank you so much i really appreciate it ❤️",
     emoji_hype: "🔥🔥🔥 Who else loved this? Drop a comment below! 👇",
     follow: "Turn on notifications for {channel} so you never miss a upload! 🔔",
     streamer: "Best moments from the stream — follow {channel} for daily clips! 🎮",
