@@ -106,6 +106,14 @@ html, body {
   transition: var(--transition);
 }
 
+/* display:flex above can override the native [hidden] rule on some mobile
+   browsers — keep Link/Unlink account buttons reliably toggleable. */
+.sidebar-item[hidden],
+a.sidebar-item[hidden],
+button.sidebar-item[hidden] {
+  display: none !important;
+}
+
 .sidebar-item:hover,
 .sidebar-item.active {
   background: var(--bg-hover);

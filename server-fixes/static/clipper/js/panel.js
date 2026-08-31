@@ -166,35 +166,48 @@
     container.appendChild(icon);
   }
 
+  function setElHidden(el, hide) {
+    if (!el) return;
+    const shouldHide = Boolean(hide);
+    el.hidden = shouldHide;
+    if (shouldHide) {
+      el.setAttribute("hidden", "");
+      el.setAttribute("aria-hidden", "true");
+    } else {
+      el.removeAttribute("hidden");
+      el.removeAttribute("aria-hidden");
+    }
+  }
+
   function updateLinkedAccountsUI() {
     const youtubeOn = Boolean(cfg.youtubeConnected);
     const tiktokOn = Boolean(cfg.tiktokConnected);
 
     if (els.linkedAccountsGroup) {
-      els.linkedAccountsGroup.hidden = !(youtubeOn || tiktokOn);
+      setElHidden(els.linkedAccountsGroup, !(youtubeOn || tiktokOn));
     }
     if (els.linkedYoutubeCard) {
-      els.linkedYoutubeCard.hidden = !youtubeOn;
+      setElHidden(els.linkedYoutubeCard, !youtubeOn);
     }
     if (els.linkedTiktokCard) {
-      els.linkedTiktokCard.hidden = !tiktokOn;
+      setElHidden(els.linkedTiktokCard, !tiktokOn);
     }
 
     // In-panel connect CTAs (critical on mobile — sidebar Link YouTube is easy to miss)
     if (els.connectAccountsGroup) {
-      els.connectAccountsGroup.hidden = youtubeOn && tiktokOn;
+      setElHidden(els.connectAccountsGroup, youtubeOn && tiktokOn);
     }
     if (els.connectYoutubeBtn) {
-      els.connectYoutubeBtn.hidden = youtubeOn;
+      setElHidden(els.connectYoutubeBtn, youtubeOn);
     }
     if (els.connectTiktokBtn) {
-      els.connectTiktokBtn.hidden = tiktokOn;
+      setElHidden(els.connectTiktokBtn, tiktokOn);
     }
     if (els.postToYoutubeLinkCta) {
-      els.postToYoutubeLinkCta.hidden = youtubeOn;
+      setElHidden(els.postToYoutubeLinkCta, youtubeOn);
     }
     if (els.postToTiktokLinkCta) {
-      els.postToTiktokLinkCta.hidden = tiktokOn;
+      setElHidden(els.postToTiktokLinkCta, tiktokOn);
     }
     if (els.postToYoutubeToggle) {
       els.postToYoutubeToggle.classList.toggle("is-unlinked", !youtubeOn);
@@ -203,18 +216,10 @@
       els.postToTiktokToggle.classList.toggle("is-unlinked", !tiktokOn);
     }
     // Sidebar: show Link only when not connected; Unlink only when connected
-    if (els.linkYoutubeBtn) {
-      els.linkYoutubeBtn.hidden = youtubeOn;
-    }
-    if (els.linkTiktokBtn) {
-      els.linkTiktokBtn.hidden = tiktokOn;
-    }
-    if (els.unlinkYoutubeBtn) {
-      els.unlinkYoutubeBtn.hidden = !youtubeOn;
-    }
-    if (els.unlinkTiktokBtn) {
-      els.unlinkTiktokBtn.hidden = !tiktokOn;
-    }
+    setElHidden(els.linkYoutubeBtn, youtubeOn);
+    setElHidden(els.linkTiktokBtn, tiktokOn);
+    setElHidden(els.unlinkYoutubeBtn, !youtubeOn);
+    setElHidden(els.unlinkTiktokBtn, !tiktokOn);
 
     const youtube = cfg.linkedAccounts?.youtube;
     if (youtubeOn && youtube && els.linkedYoutubeName) {
@@ -1945,9 +1950,6 @@
         if (!data.connected) els.postToYoutube.checked = false;
       }
       updateConnectionBadge();
-      if (els.unlinkYoutubeBtn) {
-        els.unlinkYoutubeBtn.hidden = !data.connected;
-      }
       updateSelectionUI();
       if (data.connected && data.channel) {
         addLog(`YouTube connected: ${data.channel.title}`, "success");
@@ -1984,9 +1986,6 @@
       if (els.postToTiktok) {
         els.postToTiktok.disabled = !data.connected;
         if (!data.connected) els.postToTiktok.checked = false;
-      }
-      if (els.unlinkTiktokBtn) {
-        els.unlinkTiktokBtn.hidden = !data.connected;
       }
       const banner = document.getElementById("tiktokPostingBanner");
       if (banner) banner.hidden = Boolean(data.connected);
@@ -2027,8 +2026,9 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unlink failed");
       cfg.youtubeConnected = false;
-      els.connectionBadge.textContent = "YouTube Not Linked";
-      if (els.unlinkYoutubeBtn) els.unlinkYoutubeBtn.hidden = true;
+      if (cfg.linkedAccounts) cfg.linkedAccounts.youtube = null;
+      updateLinkedAccountsUI();
+      updateConnectionBadge();
       updateSelectionUI();
       showToast("YouTube channel unlinked.", "success");
       addLog("YouTube channel unlinked. Link a different account anytime.", "info");
@@ -2196,6 +2196,13 @@
     cfg.linkedAccounts = cfg.linkedAccounts || { youtube: null, tiktok: null };
     buildActivityStages();
     updateLinkedAccountsUI();
+    updateConnectionBadge();
+    // Always re-sync from the API so mobile sessions with stale OAuth blobs
+    // still show Unlink YouTube when the account is linked in the DB.
+    window.syncSidebarAccountButtons = () => {
+      refreshConnectionStatus();
+    };
+    refreshConnectionStatus();
     updateActivityStage(
       "idle",
       cfg.youtubeConnected || cfg.tiktokConnected
