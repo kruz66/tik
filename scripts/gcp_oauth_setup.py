@@ -60,7 +60,7 @@ ROOT = Path(__file__).resolve().parent
 DEFAULT_CONFIG = ROOT.parent / "oauth_setup_config.json"
 EXAMPLE_CONFIG = ROOT / "oauth_setup_config.example.json"
 
-REDIRECT_DEFAULT = "https://mekesh.work.gd:8001/api/youtube/callback/"
+REDIRECT_DEFAULT = "https://mekesh.work.gd/api/youtube/callback/"
 YOUTUBE_API = "youtube.googleapis.com"
 
 

@@ -8,7 +8,7 @@
   "num_projects": 9,
   "project_name_prefix": "WishFox Clip Pool",
   "app_name": "WishFox Clipper",
-  "redirect_uri": "https://mekesh.work.gd:8001/api/youtube/callback/",
+  "redirect_uri": "https://mekesh.work.gd/api/youtube/callback/",
   "output_dir": "./oauth_output",
   "cdp_url": "http://127.0.0.1:9222",
   "browser_executable": "",

@@ -21,7 +21,7 @@ WishFox is a creator workflow application that lets authenticated users schedule
 - **Fault isolation:** If one GCP project hits its daily YouTube Data API unit limit, uploads continue via other linked projects without stopping the user’s queue.
 - **Capacity at scale:** Each `videos.insert` call costs approximately 1,600 quota units. Our target is up to ~800 uploads per day across active creator workspaces. Default 10,000 units per project supports only ~6 uploads per day per project.
 - **Operational separation:** OAuth client credentials are registered per GCP project per Google’s console model. Each project has its own OAuth client ID; users authorize the same WishFox app once per project during pool linking so tokens remain valid for that client.
-- **No duplicate or abusive use:** All projects serve the **same** WishFox web application (https://mekesh.work.gd:8001/). We do not scrape, republish third-party content without user action, or upload without the channel owner’s OAuth grant.
+- **No duplicate or abusive use:** All projects serve the **same** WishFox web application (https://mekesh.work.gd/). We do not scrape, republish third-party content without user action, or upload without the channel owner’s OAuth grant.
 
 **Project numbers and roles (API client: WishFox):**
 
@@ -43,7 +43,7 @@ We request increased **Queries per day** quota on each project so the pool can s
 
 We have attached / linked a screen recording that shows:
 
-1. Logging into WishFox at https://mekesh.work.gd:8001/
+1. Logging into WishFox at https://mekesh.work.gd/
 2. Linking a YouTube channel via Google OAuth (consent screen and permissions)
 3. Queueing or uploading a clip through the dashboard
 4. The upload completing on YouTube (or the in-app success state)
@@ -58,10 +58,10 @@ Please use these credentials **only** for compliance review:
 
 | Field | Value |
 |-------|-------|
-| Login URL | https://mekesh.work.gd:8001/ |
+| Login URL | https://mekesh.work.gd/ |
 | Username | wishfox |
 | Password | wishfox2626 |
-| Notes | After login, use **Link YouTube** to connect a test channel. Dashboard shows upload queue, scheduling, and channel status. Privacy: https://mekesh.work.gd:8001/privacy/ Terms: https://mekesh.work.gd:8001/terms/ |
+| Notes | After login, use **Link YouTube** to connect a test channel. Dashboard shows upload queue, scheduling, and channel status. Privacy: https://mekesh.work.gd/privacy/ Terms: https://mekesh.work.gd/terms/ |
 
 If your team needs a dedicated review account or temporary password change, contact us at davidmargret458@gmail.com.
 
@@ -70,7 +70,7 @@ Thank you for your time. We are happy to provide any additional detail.
 Best regards,  
 David Margret  
 WishFox  
-https://mekesh.work.gd:8001/  
+https://mekesh.work.gd/  
 davidmargret458@gmail.com
 
 ---

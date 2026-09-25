@@ -23,7 +23,7 @@ Edit:
 - `email` — your Google account (e.g. `skyblaick@gmail.com`)
 - `test_users` — OAuth test users list
 - `num_projects` — default `9`
-- `redirect_uri` — `https://mekesh.work.gd:8001/api/youtube/callback/`
+- `redirect_uri` — `https://mekesh.work.gd/api/youtube/callback/`
 
 ### 3. Start Brave with CDP (keeps your login)
 
