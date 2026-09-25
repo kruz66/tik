@@ -1,0 +1,74 @@
+[
+  {
+    "project_id": "wishfox-clip-pool-c",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "wishfox-yt-extra-1-cd35",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "wishfox-clip-pool-h",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "key-journal-505020-k7",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "wishfox-yt-pool-5",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "youtubelink-500704",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "copper-site-500801-i2",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "my-project-3-500802",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  },
+  {
+    "project_id": "my-project-4-500802",
+    "redirect_uris": [
+      "https://mekesh.work.gd/api/youtube/callback/",
+      "https://mekesh.work.gd:8001/api/youtube/callback/"
+    ],
+    "note": "client_id/client_secret live only on the server \u2014 do not commit secrets"
+  }
+]
